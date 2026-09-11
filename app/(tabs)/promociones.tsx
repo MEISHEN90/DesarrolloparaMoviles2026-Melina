@@ -1,7 +1,65 @@
 import { Link } from "expo-router";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+
+import { obtenerPromociones } from "../../src/servicios/promociones";
+import { Promocion } from "../../src/tipos/modelos";
 
 export default function PromocionesScreen() {
+  const [promociones, setPromociones] = useState<Promocion[]>([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function cargarPromociones() {
+      try {
+        setCargando(true);
+        setError(null);
+
+        const datos = await obtenerPromociones();
+
+        setPromociones(datos);
+      } catch {
+        setError("No fue posible cargar las promociones.");
+      } finally {
+        setCargando(false);
+      }
+    }
+
+    cargarPromociones();
+  }, []);
+
+  if (cargando) {
+    return (
+      <View style={styles.estadoContainer}>
+        <ActivityIndicator size="large" />
+        <Text style={styles.estadoTexto}>Cargando promociones...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.estadoContainer}>
+        <Text style={styles.errorTexto}>{error}</Text>
+      </View>
+    );
+  }
+
+  if (promociones.length === 0) {
+    return (
+      <View style={styles.estadoContainer}>
+        <Text style={styles.estadoTexto}>No hay promociones disponibles.</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Promociones</Text>
@@ -10,15 +68,34 @@ export default function PromocionesScreen() {
         Consultá las promociones disponibles en los comercios.
       </Text>
 
-      <Link href="/promocion/pro-001" asChild>
-        <Pressable style={styles.card}>
-          <Text style={styles.cardTitle}>20% de descuento</Text>
+      {promociones.map((promocion) => (
+        <Link
+          key={promocion.id}
+          href={{
+            pathname: "/promocion/[id]",
+            params: { id: promocion.id },
+          }}
+          asChild
+        >
+          <Pressable style={styles.card}>
+            <Text style={styles.cardTitle}>{promocion.titulo}</Text>
 
-          <Text style={styles.cardText}>Promoción de prueba</Text>
+            <Text style={styles.cardText}>{promocion.detalle}</Text>
 
-          <Text style={styles.linkText}>Ver promoción</Text>
-        </Pressable>
-      </Link>
+            {promocion.descuento !== null && (
+              <Text style={styles.descuento}>
+                {promocion.descuento}% de descuento
+              </Text>
+            )}
+
+            <Text style={styles.vigencia}>
+              Vigente hasta: {promocion.hasta}
+            </Text>
+
+            <Text style={styles.linkText}>Ver promoción</Text>
+          </Pressable>
+        </Link>
+      ))}
     </View>
   );
 }
@@ -37,6 +114,7 @@ const styles = StyleSheet.create({
 
   subtitle: {
     fontSize: 16,
+    marginBottom: 4,
   },
 
   card: {
@@ -55,8 +133,36 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 
+  descuento: {
+    fontSize: 15,
+    fontWeight: "700",
+  },
+
+  vigencia: {
+    fontSize: 13,
+  },
+
   linkText: {
     marginTop: 8,
+    fontWeight: "600",
+  },
+
+  estadoContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 24,
+    gap: 12,
+  },
+
+  estadoTexto: {
+    fontSize: 16,
+    textAlign: "center",
+  },
+
+  errorTexto: {
+    fontSize: 16,
+    textAlign: "center",
     fontWeight: "600",
   },
 });

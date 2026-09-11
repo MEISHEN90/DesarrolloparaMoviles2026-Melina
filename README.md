@@ -134,16 +134,25 @@ Desarrollo realizado actualmente sobre:
 
 ### ⏳ Etapa 2 - Tipos, mocks y capa de servicios
 
-- [ ] Definición de modelos y tipos TypeScript.
-- [ ] Modelo Comercio.
-- [ ] Modelo Rubro.
-- [ ] Modelo Horario.
-- [ ] Modelo Promoción.
-- [ ] Modelo Reseña.
-- [ ] Modelo Usuario.
-- [ ] Datos simulados en mocks.
-- [ ] Servicios asíncronos.
-- [ ] Estados de carga, vacío y error.
+### ⏳ Etapa 2 - Tipos, mocks y capa de servicios
+
+- [x] Definición de modelos y tipos TypeScript.
+- [x] Modelo Comercio.
+- [x] Modelo Rubro.
+- [x] Modelo Horario.
+- [x] Modelo Promoción.
+- [x] Modelo Reseña.
+- [x] Modelo Usuario.
+- [x] Datos simulados en mocks.
+- [x] Servicios asíncronos.
+- [x] Estados de carga, vacío y error.
+- [x] Listado de comercios consumiendo servicios.
+- [x] Listado de promociones consumiendo servicios.
+- [x] Detalle de comercio por ID.
+- [x] Detalle de promoción por ID.
+- [ ] Filtro de comercios por rubro.
+- [ ] Integración visual de rubros en la pantalla principal.
+- [ ] Búsqueda de comercios por nombre.
 
 ### ⏳ Etapa 3 - Autenticación y sesión
 
