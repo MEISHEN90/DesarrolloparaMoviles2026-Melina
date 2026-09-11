@@ -1,22 +1,22 @@
 import { Link } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-export default function ComerciosScreen() {
+export default function PromocionesScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Directorio de Comercios</Text>
+      <Text style={styles.title}>Promociones</Text>
 
       <Text style={styles.subtitle}>
-        Encontrá comercios de Concepción del Uruguay.
+        Consultá las promociones disponibles en los comercios.
       </Text>
 
-      <Link href="/comercio/com-001" asChild>
+      <Link href="/promocion/pro-001" asChild>
         <Pressable style={styles.card}>
-          <Text style={styles.cardTitle}>Comercio de prueba</Text>
+          <Text style={styles.cardTitle}>20% de descuento</Text>
 
-          <Text style={styles.cardText}>Ferretería y construcción</Text>
+          <Text style={styles.cardText}>Promoción de prueba</Text>
 
-          <Text style={styles.linkText}>Ver comercio</Text>
+          <Text style={styles.linkText}>Ver promoción</Text>
         </Pressable>
       </Link>
     </View>
