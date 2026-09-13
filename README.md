@@ -158,11 +158,12 @@ Desarrollo realizado actualmente sobre:
 
 ### ⏳ Etapa 3 - Autenticación y sesión
 
-- [ ] Registro e inicio de sesión.
-- [ ] Persistencia de sesión.
-- [ ] Secure Store.
-- [ ] Autenticación biométrica.
-- [ ] Alternativa para dispositivos sin biometría.
+- [ ] Registro de usuario.
+- [x] Inicio de sesión.
+- [x] Persistencia de sesión.
+- [x] Secure Store.
+- [x] Autenticación biométrica.
+- [x] Alternativa para dispositivos sin biometría.
 
 ### ⏳ Etapa 4 - Ubicación y mapa
 
