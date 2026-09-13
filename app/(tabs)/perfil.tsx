@@ -29,8 +29,6 @@ export default function PerfilScreen() {
 
           const usuarioId = await obtenerUsuarioSesionId();
 
-          console.log("ID recuperado de SecureStore:", usuarioId);
-
           if (!activo) {
             return;
           }
@@ -42,16 +40,12 @@ export default function PerfilScreen() {
 
           const usuarioEncontrado = await obtenerUsuarioPorId(usuarioId);
 
-          console.log("Usuario recuperado:", usuarioEncontrado);
-
           if (!activo) {
             return;
           }
 
           setUsuario(usuarioEncontrado);
-        } catch (error) {
-          console.log("Error al recuperar la sesión:", error);
-
+        } catch {
           if (activo) {
             setUsuario(null);
           }
@@ -71,19 +65,14 @@ export default function PerfilScreen() {
   );
 
   async function manejarCerrarSesion() {
-    try {
-      await cerrarSesion();
-      setUsuario(null);
-    } catch (error) {
-      console.log("Error al cerrar sesión:", error);
-    }
+    await cerrarSesion();
+    setUsuario(null);
   }
 
   if (cargando) {
     return (
       <View style={styles.estadoContainer}>
         <ActivityIndicator size="large" />
-
         <Text style={styles.descripcion}>Cargando sesión...</Text>
       </View>
     );
@@ -120,15 +109,12 @@ export default function PerfilScreen() {
       <Text style={styles.title}>Mi perfil</Text>
 
       <Text style={styles.label}>Nombre</Text>
-
       <Text style={styles.descripcion}>{usuario.nombre}</Text>
 
       <Text style={styles.label}>Correo electrónico</Text>
-
       <Text style={styles.descripcion}>{usuario.email}</Text>
 
       <Text style={styles.label}>Tipo de cuenta</Text>
-
       <Text style={styles.descripcion}>
         {usuario.rol === "vecino" ? "Vecino" : "Comercio"}
       </Text>
