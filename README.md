@@ -165,13 +165,15 @@ Desarrollo realizado actualmente sobre:
 - [x] Autenticación biométrica.
 - [x] Alternativa para dispositivos sin biometría.
 
-### ⏳ Etapa 4 - Ubicación y mapa
+### ✅ Etapa 4 - Ubicación y mapa
 
-- [ ] Permisos de ubicación.
-- [ ] Ubicación actual del usuario.
-- [ ] Integración con react-native-maps.
-- [ ] Comercios cercanos.
-- [ ] Funcionamiento alternativo sin permiso de ubicación.
+- [x] Permisos de ubicación.
+- [x] Ubicación actual del usuario.
+- [x] Integración con react-native-maps.
+- [x] Marcadores de comercios en el mapa.
+- [x] Comercios cercanos ordenados por distancia.
+- [x] Cálculo y formato de distancias.
+- [x] Funcionamiento alternativo sin permiso de ubicación.
 
 ### ⏳ Etapa 5 - Cámara y archivos
 
@@ -208,6 +210,8 @@ Desarrollo realizado actualmente sobre:
 - [x] Validación de reapertura por la tarde.
 - [x] Validación de horario fuera de atención.
 - [x] Validación de día sin horarios.
+- [x] Pruebas unitarias del cálculo de distancias.
+- [x] Pruebas unitarias del formato de distancias.
 - [x] Verificación TypeScript con `npx tsc --noEmit`.
 - [x] Verificación de código con `npm run lint`.
 - [ ] Pruebas de funcionalidades principales restantes.
