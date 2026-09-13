@@ -1,27 +1,39 @@
 import { router, Stack } from "expo-router";
 import { useState } from "react";
 import {
-  ActivityIndicator,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
+    ActivityIndicator,
+    Pressable,
+    StyleSheet,
+    Text,
+    TextInput,
+    View,
 } from "react-native";
 
-import { iniciarSesion } from "../src/servicios/autenticacion";
+import { registrarUsuario } from "../src/servicios/autenticacion";
 import { guardarSesion } from "../src/servicios/sesion";
 
-export default function LoginScreen() {
+export default function RegistroScreen() {
+  const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmarPassword, setConfirmarPassword] = useState("");
 
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function manejarLogin() {
-    if (!email.trim() || !password.trim()) {
-      setError("Debe completar correo electrónico y contraseña.");
+  async function manejarRegistro() {
+    if (
+      !nombre.trim() ||
+      !email.trim() ||
+      !password.trim() ||
+      !confirmarPassword.trim()
+    ) {
+      setError("Debe completar todos los campos.");
+      return;
+    }
+
+    if (password !== confirmarPassword) {
+      setError("Las contraseñas no coinciden.");
       return;
     }
 
@@ -29,7 +41,11 @@ export default function LoginScreen() {
       setCargando(true);
       setError(null);
 
-      const resultado = await iniciarSesion(email, password);
+      const resultado = await registrarUsuario({
+        nombre,
+        email,
+        password,
+      });
 
       await guardarSesion(resultado.token, resultado.usuario.id);
 
@@ -38,7 +54,7 @@ export default function LoginScreen() {
       if (errorDesconocido instanceof Error) {
         setError(errorDesconocido.message);
       } else {
-        setError("No fue posible iniciar sesión.");
+        setError("No fue posible registrar el usuario.");
       }
     } finally {
       setCargando(false);
@@ -49,16 +65,27 @@ export default function LoginScreen() {
     <>
       <Stack.Screen
         options={{
-          title: "Iniciar sesión",
+          title: "Crear cuenta",
         }}
       />
 
       <View style={styles.container}>
-        <Text style={styles.title}>Iniciar sesión</Text>
+        <Text style={styles.title}>Crear cuenta</Text>
 
         <Text style={styles.subtitle}>
-          Ingresá para acceder a tus favoritos, reseñas y promociones.
+          Registrate para acceder a favoritos, reseñas y promociones.
         </Text>
+
+        <Text style={styles.label}>Nombre</Text>
+
+        <TextInput
+          value={nombre}
+          onChangeText={setNombre}
+          placeholder="Nombre y apellido"
+          autoCapitalize="words"
+          style={styles.input}
+          accessibilityLabel="Nombre"
+        />
 
         <Text style={styles.label}>Correo electrónico</Text>
 
@@ -78,47 +105,48 @@ export default function LoginScreen() {
         <TextInput
           value={password}
           onChangeText={setPassword}
-          placeholder="Contraseña"
+          placeholder="Mínimo 6 caracteres"
           secureTextEntry
           autoCapitalize="none"
           style={styles.input}
           accessibilityLabel="Contraseña"
         />
 
+        <Text style={styles.label}>Confirmar contraseña</Text>
+
+        <TextInput
+          value={confirmarPassword}
+          onChangeText={setConfirmarPassword}
+          placeholder="Repetir contraseña"
+          secureTextEntry
+          autoCapitalize="none"
+          style={styles.input}
+          accessibilityLabel="Confirmar contraseña"
+        />
+
         {error && <Text style={styles.error}>{error}</Text>}
 
         <Pressable
-          onPress={manejarLogin}
+          onPress={manejarRegistro}
           disabled={cargando}
           style={[styles.boton, cargando && styles.botonDeshabilitado]}
           accessibilityRole="button"
-          accessibilityLabel="Iniciar sesión"
+          accessibilityLabel="Crear cuenta"
         >
           {cargando ? (
             <ActivityIndicator />
           ) : (
-            <Text style={styles.botonTexto}>Iniciar sesión</Text>
+            <Text style={styles.botonTexto}>Crear cuenta</Text>
           )}
-        </Pressable>
-
-        <Pressable
-          onPress={() => router.push("/registro")}
-          style={styles.botonSecundario}
-          accessibilityRole="button"
-          accessibilityLabel="Crear una cuenta"
-        >
-          <Text style={styles.botonSecundarioTexto}>Crear una cuenta</Text>
         </Pressable>
 
         <Pressable
           onPress={() => router.back()}
           style={styles.botonSecundario}
           accessibilityRole="button"
-          accessibilityLabel="Continuar sin iniciar sesión"
+          accessibilityLabel="Volver al inicio de sesión"
         >
-          <Text style={styles.botonSecundarioTexto}>
-            Continuar sin iniciar sesión
-          </Text>
+          <Text style={styles.botonSecundarioTexto}>Ya tengo una cuenta</Text>
         </Pressable>
       </View>
     </>
