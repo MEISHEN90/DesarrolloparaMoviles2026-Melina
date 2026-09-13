@@ -132,9 +132,7 @@ Desarrollo realizado actualmente sobre:
 - [x] Navegación de retorno mediante Stack.
 - [x] Pruebas iniciales realizadas en emulador Android.
 
-### ⏳ Etapa 2 - Tipos, mocks y capa de servicios
-
-### ⏳ Etapa 2 - Tipos, mocks y capa de servicios
+### ✅ Etapa 2 - Tipos, mocks y capa de servicios
 
 - [x] Definición de modelos y tipos TypeScript.
 - [x] Modelo Comercio.
@@ -150,9 +148,13 @@ Desarrollo realizado actualmente sobre:
 - [x] Listado de promociones consumiendo servicios.
 - [x] Detalle de comercio por ID.
 - [x] Detalle de promoción por ID.
-- [ ] Filtro de comercios por rubro.
-- [ ] Integración visual de rubros en la pantalla principal.
-- [ ] Búsqueda de comercios por nombre.
+- [x] Filtro de comercios por rubro.
+- [x] Integración visual de rubros en la pantalla principal.
+- [x] Búsqueda de comercios por nombre y descripción.
+- [x] Búsqueda tolerante a mayúsculas, minúsculas y tildes.
+- [x] Cálculo dinámico de comercios abiertos según día y horario.
+- [x] Soporte para horarios partidos.
+- [x] Filtro "Abierto ahora".
 
 ### ⏳ Etapa 3 - Autenticación y sesión
 
@@ -197,9 +199,19 @@ Desarrollo realizado actualmente sobre:
 
 ### ⏳ Etapa 9 - Testing y revisión
 
-- [ ] Pruebas de funcionalidades principales.
-- [ ] Validaciones.
+- [x] Configuración de Jest con jest-expo.
+- [x] Primera prueba unitaria sobre lógica propia.
+- [x] Validación de horarios partidos.
+- [x] Validación de comercio abierto por la mañana.
+- [x] Validación de cierre durante el corte del mediodía.
+- [x] Validación de reapertura por la tarde.
+- [x] Validación de horario fuera de atención.
+- [x] Validación de día sin horarios.
+- [x] Verificación TypeScript con `npx tsc --noEmit`.
+- [x] Verificación de código con `npm run lint`.
+- [ ] Pruebas de funcionalidades principales restantes.
 - [ ] Pruebas de estados vacío y error.
+- [ ] Pruebas de validaciones de formularios.
 - [ ] Revisión integral de navegación.
 
 ### ⏳ Etapa 10 - Entrega final
@@ -211,3 +223,25 @@ Desarrollo realizado actualmente sobre:
 - [ ] APK instalable.
 - [ ] Pruebas en dispositivo físico.
 - [ ] Preparación de defensa oral.
+
+## Ejecución local del proyecto
+
+Con Android Studio abierto y un emulador Android iniciado:
+
+```bash
+npm install
+npx expo start
+a
+
+## Comprobar TypeScript:
+
+npx tsc --noEmit
+
+## Comprobar lint:
+
+npm run lint
+
+## Ejecutar pruebas:
+
+npm test
+```

@@ -3,18 +3,44 @@ import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from "react-native";
 
-import { obtenerComercios } from "../../src/servicios/comercios";
-import { Comercio } from "../../src/tipos/modelos";
+import { buscarComercios } from "../../src/servicios/comercios";
+import { obtenerRubros } from "../../src/servicios/rubros";
+import { Comercio, Rubro } from "../../src/tipos/modelos";
 
 export default function ComerciosScreen() {
   const [comercios, setComercios] = useState<Comercio[]>([]);
+  const [rubros, setRubros] = useState<Rubro[]>([]);
+
+  const [textoBusqueda, setTextoBusqueda] = useState("");
+
+  const [rubroSeleccionado, setRubroSeleccionado] = useState<string | null>(
+    null,
+  );
+
+  const [soloAbiertos, setSoloAbiertos] = useState(false);
+
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function cargarRubros() {
+      try {
+        const datos = await obtenerRubros();
+        setRubros(datos);
+      } catch {
+        setError("No fue posible cargar los rubros.");
+      }
+    }
+
+    cargarRubros();
+  }, []);
 
   useEffect(() => {
     async function cargarComercios() {
@@ -22,7 +48,11 @@ export default function ComerciosScreen() {
         setCargando(true);
         setError(null);
 
-        const datos = await obtenerComercios();
+        const datos = await buscarComercios(
+          textoBusqueda,
+          rubroSeleccionado,
+          soloAbiertos,
+        );
 
         setComercios(datos);
       } catch {
@@ -33,32 +63,7 @@ export default function ComerciosScreen() {
     }
 
     cargarComercios();
-  }, []);
-
-  if (cargando) {
-    return (
-      <View style={styles.estadoContainer}>
-        <ActivityIndicator size="large" />
-        <Text style={styles.estadoTexto}>Cargando comercios...</Text>
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View style={styles.estadoContainer}>
-        <Text style={styles.errorTexto}>{error}</Text>
-      </View>
-    );
-  }
-
-  if (comercios.length === 0) {
-    return (
-      <View style={styles.estadoContainer}>
-        <Text style={styles.estadoTexto}>No hay comercios disponibles.</Text>
-      </View>
-    );
-  }
+  }, [textoBusqueda, rubroSeleccionado, soloAbiertos]);
 
   return (
     <View style={styles.container}>
@@ -68,31 +73,125 @@ export default function ComerciosScreen() {
         Encontrá comercios de Concepción del Uruguay.
       </Text>
 
-      {comercios.map((comercio) => (
-        <Link
-          key={comercio.id}
-          href={{
-            pathname: "/comercio/[id]",
-            params: { id: comercio.id },
-          }}
-          asChild
+      <TextInput
+        value={textoBusqueda}
+        onChangeText={setTextoBusqueda}
+        placeholder="Buscar por nombre o producto..."
+        style={styles.input}
+        accessibilityLabel="Buscar comercios"
+      />
+
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.rubrosContainer}
+      >
+        <Pressable
+          onPress={() => setRubroSeleccionado(null)}
+          style={[
+            styles.chip,
+            rubroSeleccionado === null && styles.chipSeleccionado,
+          ]}
         >
-          <Pressable style={styles.card}>
-            <Text style={styles.cardTitle}>{comercio.nombre}</Text>
+          <Text
+            style={[
+              styles.chipTexto,
+              rubroSeleccionado === null && styles.chipTextoSeleccionado,
+            ]}
+          >
+            Todos
+          </Text>
+        </Pressable>
 
-            <Text style={styles.cardText}>{comercio.descripcion}</Text>
-
-            <Text style={styles.direccion}>{comercio.direccion}</Text>
-
-            <Text style={styles.puntaje}>
-              ★ {comercio.puntaje.toFixed(1)} · {comercio.cantidadResenas}{" "}
-              reseñas
+        {rubros.map((rubro) => (
+          <Pressable
+            key={rubro.id}
+            onPress={() => setRubroSeleccionado(rubro.id)}
+            style={[
+              styles.chip,
+              rubroSeleccionado === rubro.id && styles.chipSeleccionado,
+            ]}
+          >
+            <Text
+              style={[
+                styles.chipTexto,
+                rubroSeleccionado === rubro.id && styles.chipTextoSeleccionado,
+              ]}
+            >
+              {rubro.nombre}
             </Text>
-
-            <Text style={styles.linkText}>Ver comercio</Text>
           </Pressable>
-        </Link>
-      ))}
+        ))}
+      </ScrollView>
+
+      <Pressable
+        onPress={() => setSoloAbiertos((valorActual) => !valorActual)}
+        style={[
+          styles.filtroAbierto,
+          soloAbiertos && styles.filtroAbiertoSeleccionado,
+        ]}
+        accessibilityRole="button"
+        accessibilityState={{
+          selected: soloAbiertos,
+        }}
+        accessibilityLabel="Filtrar comercios abiertos ahora"
+      >
+        <Text
+          style={[
+            styles.filtroAbiertoTexto,
+            soloAbiertos && styles.filtroAbiertoTextoSeleccionado,
+          ]}
+        >
+          {soloAbiertos ? "✓ " : ""}
+          Abierto ahora
+        </Text>
+      </Pressable>
+
+      {cargando ? (
+        <View style={styles.estadoContainer}>
+          <ActivityIndicator size="large" />
+          <Text style={styles.estadoTexto}>Cargando comercios...</Text>
+        </View>
+      ) : error ? (
+        <View style={styles.estadoContainer}>
+          <Text style={styles.errorTexto}>{error}</Text>
+        </View>
+      ) : comercios.length === 0 ? (
+        <View style={styles.estadoContainer}>
+          <Text style={styles.estadoTexto}>No se encontraron comercios.</Text>
+        </View>
+      ) : (
+        <ScrollView
+          contentContainerStyle={styles.lista}
+          showsVerticalScrollIndicator={false}
+        >
+          {comercios.map((comercio) => (
+            <Link
+              key={comercio.id}
+              href={{
+                pathname: "/comercio/[id]",
+                params: { id: comercio.id },
+              }}
+              asChild
+            >
+              <Pressable style={styles.card}>
+                <Text style={styles.cardTitle}>{comercio.nombre}</Text>
+
+                <Text style={styles.cardText}>{comercio.descripcion}</Text>
+
+                <Text style={styles.direccion}>{comercio.direccion}</Text>
+
+                <Text style={styles.puntaje}>
+                  ★ {comercio.puntaje.toFixed(1)} · {comercio.cantidadResenas}{" "}
+                  reseñas
+                </Text>
+
+                <Text style={styles.linkText}>Ver comercio</Text>
+              </Pressable>
+            </Link>
+          ))}
+        </ScrollView>
+      )}
     </View>
   );
 }
@@ -101,7 +200,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    gap: 16,
   },
 
   title: {
@@ -111,7 +209,69 @@ const styles = StyleSheet.create({
 
   subtitle: {
     fontSize: 16,
-    marginBottom: 4,
+    marginTop: 6,
+    marginBottom: 14,
+  },
+
+  input: {
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    fontSize: 16,
+    marginBottom: 12,
+  },
+
+  rubrosContainer: {
+    gap: 8,
+    paddingBottom: 12,
+  },
+
+  chip: {
+    borderWidth: 1,
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+
+  chipSeleccionado: {
+    backgroundColor: "#222",
+  },
+
+  chipTexto: {
+    fontSize: 14,
+  },
+
+  chipTextoSeleccionado: {
+    color: "#fff",
+    fontWeight: "600",
+  },
+
+  filtroAbierto: {
+    alignSelf: "flex-start",
+    borderWidth: 1,
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    marginBottom: 12,
+  },
+
+  filtroAbiertoSeleccionado: {
+    backgroundColor: "#222",
+  },
+
+  filtroAbiertoTexto: {
+    fontSize: 14,
+  },
+
+  filtroAbiertoTextoSeleccionado: {
+    color: "#fff",
+    fontWeight: "600",
+  },
+
+  lista: {
+    gap: 12,
+    paddingBottom: 24,
   },
 
   card: {
