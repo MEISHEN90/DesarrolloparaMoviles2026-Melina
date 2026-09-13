@@ -156,9 +156,9 @@ Desarrollo realizado actualmente sobre:
 - [x] Soporte para horarios partidos.
 - [x] Filtro "Abierto ahora".
 
-### ⏳ Etapa 3 - Autenticación y sesión
+### ✅ Etapa 3 - Autenticación y sesión
 
-- [ ] Registro de usuario.
+- [x] Registro de usuario.
 - [x] Inicio de sesión.
 - [x] Persistencia de sesión.
 - [x] Secure Store.
