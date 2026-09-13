@@ -10,6 +10,10 @@ import {
 
 import { obtenerUsuarioPorId } from "../../src/servicios/autenticacion";
 import {
+  autenticarConBiometria,
+  biometriaDisponible,
+} from "../../src/servicios/biometria";
+import {
   cerrarSesion,
   obtenerUsuarioSesionId,
 } from "../../src/servicios/sesion";
@@ -19,61 +23,122 @@ export default function PerfilScreen() {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [cargando, setCargando] = useState(true);
 
-  useFocusEffect(
-    useCallback(() => {
-      let activo = true;
+  const [requiereBiometria, setRequiereBiometria] = useState(false);
 
-      async function cargarSesion() {
-        try {
-          setCargando(true);
+  const [autenticando, setAutenticando] = useState(false);
 
-          const usuarioId = await obtenerUsuarioSesionId();
+  const [usuarioSesionId, setUsuarioSesionId] = useState<string | null>(null);
 
-          if (!activo) {
-            return;
-          }
+  const cargarUsuario = useCallback(async (id: string) => {
+    const usuarioEncontrado = await obtenerUsuarioPorId(id);
 
-          if (!usuarioId) {
-            setUsuario(null);
-            return;
-          }
+    setUsuario(usuarioEncontrado);
+  }, []);
 
-          const usuarioEncontrado = await obtenerUsuarioPorId(usuarioId);
+  const verificarSesion = useCallback(async () => {
+    try {
+      setCargando(true);
+      setUsuario(null);
+      setRequiereBiometria(false);
 
-          if (!activo) {
-            return;
-          }
+      const usuarioId = await obtenerUsuarioSesionId();
 
-          setUsuario(usuarioEncontrado);
-        } catch {
-          if (activo) {
-            setUsuario(null);
-          }
-        } finally {
-          if (activo) {
-            setCargando(false);
-          }
-        }
+      setUsuarioSesionId(usuarioId);
+
+      if (!usuarioId) {
+        return;
       }
 
-      cargarSesion();
+      const disponible = await biometriaDisponible();
 
-      return () => {
-        activo = false;
-      };
-    }, []),
+      if (!disponible) {
+        await cargarUsuario(usuarioId);
+        return;
+      }
+
+      setRequiereBiometria(true);
+    } finally {
+      setCargando(false);
+    }
+  }, [cargarUsuario]);
+
+  useFocusEffect(
+    useCallback(() => {
+      verificarSesion();
+    }, [verificarSesion]),
   );
+
+  async function manejarBiometria() {
+    if (!usuarioSesionId) {
+      return;
+    }
+
+    try {
+      setAutenticando(true);
+
+      const autenticado = await autenticarConBiometria();
+
+      if (!autenticado) {
+        return;
+      }
+
+      await cargarUsuario(usuarioSesionId);
+
+      setRequiereBiometria(false);
+    } finally {
+      setAutenticando(false);
+    }
+  }
 
   async function manejarCerrarSesion() {
     await cerrarSesion();
+
     setUsuario(null);
+    setUsuarioSesionId(null);
+    setRequiereBiometria(false);
   }
 
   if (cargando) {
     return (
       <View style={styles.estadoContainer}>
         <ActivityIndicator size="large" />
-        <Text style={styles.descripcion}>Cargando sesión...</Text>
+
+        <Text style={styles.descripcion}>Verificando sesión...</Text>
+      </View>
+    );
+  }
+
+  if (usuarioSesionId && requiereBiometria && !usuario) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>Confirmar identidad</Text>
+
+        <Text style={styles.descripcion}>
+          Tenés una sesión iniciada. Confirmá tu identidad para acceder a los
+          datos de tu cuenta.
+        </Text>
+
+        <Pressable
+          onPress={manejarBiometria}
+          disabled={autenticando}
+          style={[styles.boton, autenticando && styles.botonDeshabilitado]}
+          accessibilityRole="button"
+          accessibilityLabel="Ingresar con biometría"
+        >
+          {autenticando ? (
+            <ActivityIndicator />
+          ) : (
+            <Text style={styles.botonTexto}>Ingresar con biometría</Text>
+          )}
+        </Pressable>
+
+        <Pressable
+          onPress={manejarCerrarSesion}
+          style={styles.botonSecundario}
+          accessibilityRole="button"
+        >
+          <Text style={styles.botonSecundarioTexto}>Cerrar sesión</Text>
+        </Pressable>
       </View>
     );
   }
@@ -109,12 +174,15 @@ export default function PerfilScreen() {
       <Text style={styles.title}>Mi perfil</Text>
 
       <Text style={styles.label}>Nombre</Text>
+
       <Text style={styles.descripcion}>{usuario.nombre}</Text>
 
       <Text style={styles.label}>Correo electrónico</Text>
+
       <Text style={styles.descripcion}>{usuario.email}</Text>
 
       <Text style={styles.label}>Tipo de cuenta</Text>
+
       <Text style={styles.descripcion}>
         {usuario.rol === "vecino" ? "Vecino" : "Comercio"}
       </Text>
@@ -169,8 +237,23 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
+  botonDeshabilitado: {
+    opacity: 0.6,
+  },
+
   botonTexto: {
     fontSize: 16,
     fontWeight: "700",
+  },
+
+  botonSecundario: {
+    marginTop: 8,
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+
+  botonSecundarioTexto: {
+    fontSize: 15,
+    fontWeight: "600",
   },
 });
