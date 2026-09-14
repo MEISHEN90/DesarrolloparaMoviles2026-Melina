@@ -11,6 +11,7 @@ import "react-native-reanimated";
 
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { inicializarBaseDatos } from "../src/servicios/base-datos";
+import { configurarNotificaciones } from "../src/servicios/notificaciones";
 
 export const unstable_settings = {
   anchor: "(tabs)",
@@ -26,6 +27,7 @@ export default function RootLayout() {
     async function prepararAplicacion() {
       try {
         await inicializarBaseDatos();
+        await configurarNotificaciones();
         setBaseLista(true);
       } catch (errorDesconocido) {
         if (errorDesconocido instanceof Error) {

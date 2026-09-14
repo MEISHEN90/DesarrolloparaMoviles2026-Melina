@@ -269,3 +269,13 @@ npm run lint
 
 npm test
 ```
+
+## Credenciales de testeo
+
+Email: "marta@mail.com"
+Contraseña: 123456
+Rol: Vecino
+
+Email: "comercio@eltornillo.com"
+Contraseña: 123456
+Rol: Comerciante
