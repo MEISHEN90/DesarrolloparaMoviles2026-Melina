@@ -8,6 +8,7 @@ import {
   View,
 } from "react-native";
 
+import { useEstadoRed } from "../../src/hooks/use-estado-red";
 import { obtenerPromociones } from "../../src/servicios/promociones";
 import { Promocion } from "../../src/tipos/modelos";
 
@@ -15,6 +16,10 @@ export default function PromocionesScreen() {
   const [promociones, setPromociones] = useState<Promocion[]>([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const estadoRed = useEstadoRed();
+
+  const sinConexion = !estadoRed.conectado || !estadoRed.tieneInternet;
 
   useEffect(() => {
     async function cargarPromociones() {
@@ -33,12 +38,13 @@ export default function PromocionesScreen() {
     }
 
     cargarPromociones();
-  }, []);
+  }, [estadoRed.conectado, estadoRed.tieneInternet]);
 
   if (cargando) {
     return (
       <View style={styles.estadoContainer}>
         <ActivityIndicator size="large" />
+
         <Text style={styles.estadoTexto}>Cargando promociones...</Text>
       </View>
     );
@@ -52,14 +58,6 @@ export default function PromocionesScreen() {
     );
   }
 
-  if (promociones.length === 0) {
-    return (
-      <View style={styles.estadoContainer}>
-        <Text style={styles.estadoTexto}>No hay promociones disponibles.</Text>
-      </View>
-    );
-  }
-
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Promociones</Text>
@@ -68,34 +66,52 @@ export default function PromocionesScreen() {
         Consultá las promociones disponibles en los comercios.
       </Text>
 
-      {promociones.map((promocion) => (
-        <Link
-          key={promocion.id}
-          href={{
-            pathname: "/promocion/[id]",
-            params: { id: promocion.id },
-          }}
-          asChild
-        >
-          <Pressable style={styles.card}>
-            <Text style={styles.cardTitle}>{promocion.titulo}</Text>
+      {sinConexion && (
+        <View style={styles.avisoSinConexion}>
+          <Text style={styles.avisoSinConexionTexto}>
+            Sin conexión. Se mostrarán las promociones disponibles localmente.
+          </Text>
+        </View>
+      )}
 
-            <Text style={styles.cardText}>{promocion.detalle}</Text>
+      {promociones.length === 0 ? (
+        <View style={styles.estadoContainer}>
+          <Text style={styles.estadoTexto}>
+            No hay promociones disponibles.
+          </Text>
+        </View>
+      ) : (
+        promociones.map((promocion) => (
+          <Link
+            key={promocion.id}
+            href={{
+              pathname: "/promocion/[id]",
+              params: {
+                id: promocion.id,
+              },
+            }}
+            asChild
+          >
+            <Pressable style={styles.card}>
+              <Text style={styles.cardTitle}>{promocion.titulo}</Text>
 
-            {promocion.descuento !== null && (
-              <Text style={styles.descuento}>
-                {promocion.descuento}% de descuento
+              <Text style={styles.cardText}>{promocion.detalle}</Text>
+
+              {promocion.descuento !== null && (
+                <Text style={styles.descuento}>
+                  {promocion.descuento}% de descuento
+                </Text>
+              )}
+
+              <Text style={styles.vigencia}>
+                Vigente hasta: {promocion.hasta}
               </Text>
-            )}
 
-            <Text style={styles.vigencia}>
-              Vigente hasta: {promocion.hasta}
-            </Text>
-
-            <Text style={styles.linkText}>Ver promoción</Text>
-          </Pressable>
-        </Link>
-      ))}
+              <Text style={styles.linkText}>Ver promoción</Text>
+            </Pressable>
+          </Link>
+        ))
+      )}
     </View>
   );
 }
@@ -115,6 +131,17 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     marginBottom: 4,
+  },
+
+  avisoSinConexion: {
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 12,
+  },
+
+  avisoSinConexionTexto: {
+    fontSize: 14,
+    fontWeight: "600",
   },
 
   card: {

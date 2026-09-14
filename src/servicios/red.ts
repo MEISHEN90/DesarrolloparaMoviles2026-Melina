@@ -8,8 +8,10 @@ export interface EstadoRed {
 export async function obtenerEstadoRed(): Promise<EstadoRed> {
   const estado = await Network.getNetworkStateAsync();
 
+  const conectado = estado.isConnected ?? false;
+
   return {
-    conectado: estado.isConnected ?? false,
-    tieneInternet: estado.isInternetReachable ?? false,
+    conectado,
+    tieneInternet: estado.isInternetReachable ?? conectado,
   };
 }

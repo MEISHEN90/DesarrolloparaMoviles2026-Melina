@@ -1,11 +1,21 @@
+import * as Network from "expo-network";
 import { useEffect, useState } from "react";
 
-import { EstadoRed, obtenerEstadoRed } from "../servicios/red";
+import { EstadoRed } from "../servicios/red";
 
 const ESTADO_INICIAL: EstadoRed = {
   conectado: true,
   tieneInternet: true,
 };
+
+function convertirEstado(estado: Network.NetworkState): EstadoRed {
+  const conectado = estado.isConnected ?? false;
+
+  return {
+    conectado,
+    tieneInternet: estado.isInternetReachable ?? conectado,
+  };
+}
 
 export function useEstadoRed() {
   const [estadoRed, setEstadoRed] = useState<EstadoRed>(ESTADO_INICIAL);
@@ -13,12 +23,12 @@ export function useEstadoRed() {
   useEffect(() => {
     let activo = true;
 
-    async function actualizarEstado() {
+    async function cargarEstadoInicial() {
       try {
-        const estado = await obtenerEstadoRed();
+        const estado = await Network.getNetworkStateAsync();
 
         if (activo) {
-          setEstadoRed(estado);
+          setEstadoRed(convertirEstado(estado));
         }
       } catch {
         if (activo) {
@@ -30,13 +40,17 @@ export function useEstadoRed() {
       }
     }
 
-    actualizarEstado();
+    cargarEstadoInicial();
 
-    const intervalo = setInterval(actualizarEstado, 5000);
+    const suscripcion = Network.addNetworkStateListener((estado) => {
+      if (activo) {
+        setEstadoRed(convertirEstado(estado));
+      }
+    });
 
     return () => {
       activo = false;
-      clearInterval(intervalo);
+      suscripcion.remove();
     };
   }, []);
 
