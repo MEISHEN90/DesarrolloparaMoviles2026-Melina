@@ -175,8 +175,6 @@ Desarrollo realizado actualmente sobre:
 - [x] Cálculo y formato de distancias.
 - [x] Funcionamiento alternativo sin permiso de ubicación.
 
-### ⏳ Etapa 5 - Cámara y archivos
-
 ### ✅ Etapa 5 - Cámara y archivos
 
 - [x] Uso de cámara con `expo-camera`.
@@ -192,12 +190,21 @@ Desarrollo realizado actualmente sobre:
 - [x] Uso de `File`, `Directory` y `Paths`.
 - [x] Vista previa de archivos almacenados localmente.
 
-### ⏳ Etapa 6 - Persistencia y conectividad
+### ✅ Etapa 6 - Persistencia y conectividad
 
-- [ ] SQLite.
-- [ ] Preferencias locales.
-- [ ] Funcionamiento offline.
-- [ ] Detección del estado de red.
+- [x] Inicialización de base de datos local con `expo-sqlite`.
+- [x] Persistencia de usos de promociones en SQLite.
+- [x] Prevención persistente de usos duplicados de promociones.
+- [x] Preferencias locales mediante `expo-sqlite/kv-store`.
+- [x] Persistencia del rubro seleccionado.
+- [x] Persistencia del filtro "Abierto ahora".
+- [x] Caché local de comercios.
+- [x] Caché local de promociones.
+- [x] Funcionamiento offline de comercios.
+- [x] Funcionamiento offline de promociones.
+- [x] Detección del estado de red con `expo-network`.
+- [x] Actualización automática ante cambios de conectividad.
+- [x] Aviso visual cuando la aplicación está sin conexión.
 
 ### ⏳ Etapa 7 - Notificaciones, háptica y multimedia
 
