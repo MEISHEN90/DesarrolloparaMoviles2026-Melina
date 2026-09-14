@@ -22,11 +22,8 @@ import { Usuario } from "../../src/tipos/modelos";
 export default function PerfilScreen() {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [cargando, setCargando] = useState(true);
-
   const [requiereBiometria, setRequiereBiometria] = useState(false);
-
   const [autenticando, setAutenticando] = useState(false);
-
   const [usuarioSesionId, setUsuarioSesionId] = useState<string | null>(null);
 
   const cargarUsuario = useCallback(async (id: string) => {
@@ -83,7 +80,6 @@ export default function PerfilScreen() {
       }
 
       await cargarUsuario(usuarioSesionId);
-
       setRequiereBiometria(false);
     } finally {
       setAutenticando(false);
@@ -187,9 +183,38 @@ export default function PerfilScreen() {
         {usuario.rol === "vecino" ? "Vecino" : "Comercio"}
       </Text>
 
+      {usuario.rol === "comercio" && (
+        <View style={styles.seccionComercio}>
+          <Text style={styles.seccionTitulo}>Herramientas del comercio</Text>
+
+          <Text style={styles.descripcion}>
+            Escaneá el código QR de un cliente para registrar el uso de una
+            promoción.
+          </Text>
+
+          <Pressable
+            onPress={() => router.push("/escanear-qr")}
+            style={styles.boton}
+            accessibilityRole="button"
+            accessibilityLabel="Escanear código QR"
+          >
+            <Text style={styles.botonTexto}>Escanear código QR</Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => router.push("/imagen-comercio")}
+            style={styles.boton}
+            accessibilityRole="button"
+            accessibilityLabel="Gestionar imagen del comercio"
+          >
+            <Text style={styles.botonTexto}>Gestionar imagen del comercio</Text>
+          </Pressable>
+        </View>
+      )}
+
       <Pressable
         onPress={manejarCerrarSesion}
-        style={styles.boton}
+        style={styles.botonCerrarSesion}
         accessibilityRole="button"
         accessibilityLabel="Cerrar sesión"
       >
@@ -229,8 +254,28 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
 
+  seccionComercio: {
+    marginTop: 12,
+    paddingTop: 16,
+    borderTopWidth: 1,
+  },
+
+  seccionTitulo: {
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 8,
+  },
+
   boton: {
     marginTop: 12,
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingVertical: 14,
+    alignItems: "center",
+  },
+
+  botonCerrarSesion: {
+    marginTop: 24,
     borderWidth: 1,
     borderRadius: 10,
     paddingVertical: 14,
