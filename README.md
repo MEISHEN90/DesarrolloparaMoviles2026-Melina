@@ -177,9 +177,20 @@ Desarrollo realizado actualmente sobre:
 
 ### ⏳ Etapa 5 - Cámara y archivos
 
-- [ ] Uso de cámara o selector de imágenes.
-- [ ] Lectura de códigos QR.
-- [ ] Manejo de archivos locales.
+### ✅ Etapa 5 - Cámara y archivos
+
+- [x] Uso de cámara con `expo-camera`.
+- [x] Lectura real de códigos QR.
+- [x] Interpretación y validación de QR de promociones.
+- [x] Validación de promoción y usuario asociados al QR.
+- [x] Registro del uso de una promoción.
+- [x] Prevención de usos duplicados durante la ejecución.
+- [x] Selección de imágenes desde la galería con `expo-image-picker`.
+- [x] Captura de fotografías con cámara.
+- [x] Recorte de imágenes.
+- [x] Guardado local con la API nueva de `expo-file-system`.
+- [x] Uso de `File`, `Directory` y `Paths`.
+- [x] Vista previa de archivos almacenados localmente.
 
 ### ⏳ Etapa 6 - Persistencia y conectividad
 
@@ -214,6 +225,7 @@ Desarrollo realizado actualmente sobre:
 - [x] Pruebas unitarias del formato de distancias.
 - [x] Verificación TypeScript con `npx tsc --noEmit`.
 - [x] Verificación de código con `npm run lint`.
+- [x] Pruebas unitarias de interpretación y validación de códigos QR.
 - [ ] Pruebas de funcionalidades principales restantes.
 - [ ] Pruebas de estados vacío y error.
 - [ ] Pruebas de validaciones de formularios.

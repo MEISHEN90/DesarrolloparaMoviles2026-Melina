@@ -10,7 +10,14 @@ import {
   View,
 } from "react-native";
 
+import { useEstadoRed } from "../../src/hooks/use-estado-red";
 import { buscarComercios } from "../../src/servicios/comercios";
+import {
+  guardarPreferenciaSoloAbiertos,
+  guardarRubroSeleccionado,
+  obtenerPreferenciaSoloAbiertos,
+  obtenerRubroSeleccionado,
+} from "../../src/servicios/preferencias";
 import { obtenerRubros } from "../../src/servicios/rubros";
 import { Comercio, Rubro } from "../../src/tipos/modelos";
 
@@ -26,23 +33,43 @@ export default function ComerciosScreen() {
 
   const [soloAbiertos, setSoloAbiertos] = useState(false);
 
+  const [preferenciasCargadas, setPreferenciasCargadas] = useState(false);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const estadoRed = useEstadoRed();
+
   useEffect(() => {
-    async function cargarRubros() {
+    async function cargarDatosIniciales() {
       try {
-        const datos = await obtenerRubros();
-        setRubros(datos);
+        setCargando(true);
+        setError(null);
+
+        const [datosRubros, preferenciaRubro, preferenciaSoloAbiertos] =
+          await Promise.all([
+            obtenerRubros(),
+            obtenerRubroSeleccionado(),
+            obtenerPreferenciaSoloAbiertos(),
+          ]);
+
+        setRubros(datosRubros);
+        setRubroSeleccionado(preferenciaRubro);
+        setSoloAbiertos(preferenciaSoloAbiertos);
       } catch {
-        setError("No fue posible cargar los rubros.");
+        setError("No fue posible cargar la configuración inicial.");
+      } finally {
+        setPreferenciasCargadas(true);
       }
     }
 
-    cargarRubros();
+    cargarDatosIniciales();
   }, []);
 
   useEffect(() => {
+    if (!preferenciasCargadas) {
+      return;
+    }
+
     async function cargarComercios() {
       try {
         setCargando(true);
@@ -63,7 +90,31 @@ export default function ComerciosScreen() {
     }
 
     cargarComercios();
-  }, [textoBusqueda, rubroSeleccionado, soloAbiertos]);
+  }, [textoBusqueda, rubroSeleccionado, soloAbiertos, preferenciasCargadas]);
+
+  async function seleccionarRubro(rubroId: string | null) {
+    setRubroSeleccionado(rubroId);
+
+    try {
+      await guardarRubroSeleccionado(rubroId);
+    } catch {
+      setError("No fue posible guardar la preferencia de rubro.");
+    }
+  }
+
+  async function alternarSoloAbiertos() {
+    const nuevoValor = !soloAbiertos;
+
+    setSoloAbiertos(nuevoValor);
+
+    try {
+      await guardarPreferenciaSoloAbiertos(nuevoValor);
+    } catch {
+      setError("No fue posible guardar la preferencia de comercios abiertos.");
+    }
+  }
+
+  const sinConexion = !estadoRed.conectado || !estadoRed.tieneInternet;
 
   return (
     <View style={styles.container}>
@@ -72,6 +123,14 @@ export default function ComerciosScreen() {
       <Text style={styles.subtitle}>
         Encontrá comercios de Concepción del Uruguay.
       </Text>
+
+      {sinConexion && (
+        <View style={styles.avisoSinConexion}>
+          <Text style={styles.avisoSinConexionTexto}>
+            Sin conexión. Se mostrarán los datos disponibles localmente.
+          </Text>
+        </View>
+      )}
 
       <TextInput
         value={textoBusqueda}
@@ -87,7 +146,7 @@ export default function ComerciosScreen() {
         contentContainerStyle={styles.rubrosContainer}
       >
         <Pressable
-          onPress={() => setRubroSeleccionado(null)}
+          onPress={() => seleccionarRubro(null)}
           style={[
             styles.chip,
             rubroSeleccionado === null && styles.chipSeleccionado,
@@ -106,7 +165,7 @@ export default function ComerciosScreen() {
         {rubros.map((rubro) => (
           <Pressable
             key={rubro.id}
-            onPress={() => setRubroSeleccionado(rubro.id)}
+            onPress={() => seleccionarRubro(rubro.id)}
             style={[
               styles.chip,
               rubroSeleccionado === rubro.id && styles.chipSeleccionado,
@@ -125,7 +184,7 @@ export default function ComerciosScreen() {
       </ScrollView>
 
       <Pressable
-        onPress={() => setSoloAbiertos((valorActual) => !valorActual)}
+        onPress={alternarSoloAbiertos}
         style={[
           styles.filtroAbierto,
           soloAbiertos && styles.filtroAbiertoSeleccionado,
@@ -150,6 +209,7 @@ export default function ComerciosScreen() {
       {cargando ? (
         <View style={styles.estadoContainer}>
           <ActivityIndicator size="large" />
+
           <Text style={styles.estadoTexto}>Cargando comercios...</Text>
         </View>
       ) : error ? (
@@ -170,7 +230,9 @@ export default function ComerciosScreen() {
               key={comercio.id}
               href={{
                 pathname: "/comercio/[id]",
-                params: { id: comercio.id },
+                params: {
+                  id: comercio.id,
+                },
               }}
               asChild
             >
@@ -211,6 +273,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 6,
     marginBottom: 14,
+  },
+
+  avisoSinConexion: {
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 12,
+  },
+
+  avisoSinConexionTexto: {
+    fontSize: 14,
+    fontWeight: "600",
   },
 
   input: {

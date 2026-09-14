@@ -1,22 +1,27 @@
 import { UsoDePromocion } from "../tipos/modelos";
-
-const RETARDO_SIMULADO = 400;
-
-const usosPromocionesMock: UsoDePromocion[] = [];
-
-function esperar(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+import { obtenerBaseDatos } from "./base-datos";
 
 export async function registrarUsoPromocion(
   promocionId: string,
   usuarioId: string,
   codigo: string,
 ): Promise<UsoDePromocion> {
-  await esperar(RETARDO_SIMULADO);
+  const db = await obtenerBaseDatos();
 
-  const usoExistente = usosPromocionesMock.find(
-    (uso) => uso.promocionId === promocionId && uso.usuarioId === usuarioId,
+  const usoExistente = await db.getFirstAsync<UsoDePromocion>(
+    `
+      SELECT
+        id,
+        promocion_id AS promocionId,
+        usuario_id AS usuarioId,
+        codigo,
+        validado_en AS validadoEn
+      FROM usos_promociones
+      WHERE promocion_id = ? AND usuario_id = ?
+      LIMIT 1
+    `,
+    promocionId,
+    usuarioId,
   );
 
   if (usoExistente) {
@@ -31,24 +36,59 @@ export async function registrarUsoPromocion(
     validadoEn: new Date().toISOString(),
   };
 
-  usosPromocionesMock.push(nuevoUso);
+  await db.runAsync(
+    `
+      INSERT INTO usos_promociones (
+        id,
+        promocion_id,
+        usuario_id,
+        codigo,
+        validado_en
+      )
+      VALUES (?, ?, ?, ?, ?)
+    `,
+    nuevoUso.id,
+    nuevoUso.promocionId,
+    nuevoUso.usuarioId,
+    nuevoUso.codigo,
+    nuevoUso.validadoEn,
+  );
 
   return nuevoUso;
 }
 
 export async function obtenerUsosPromocion(): Promise<UsoDePromocion[]> {
-  await esperar(RETARDO_SIMULADO);
+  const db = await obtenerBaseDatos();
 
-  return [...usosPromocionesMock];
+  return db.getAllAsync<UsoDePromocion>(
+    `
+      SELECT
+        id,
+        promocion_id AS promocionId,
+        usuario_id AS usuarioId,
+        codigo,
+        validado_en AS validadoEn
+      FROM usos_promociones
+      ORDER BY validado_en DESC
+    `,
+  );
 }
 
 export async function promocionYaUtilizada(
   promocionId: string,
   usuarioId: string,
 ): Promise<boolean> {
-  await esperar(RETARDO_SIMULADO);
+  const db = await obtenerBaseDatos();
 
-  return usosPromocionesMock.some(
-    (uso) => uso.promocionId === promocionId && uso.usuarioId === usuarioId,
+  const resultado = await db.getFirstAsync<{ cantidad: number }>(
+    `
+      SELECT COUNT(*) AS cantidad
+      FROM usos_promociones
+      WHERE promocion_id = ? AND usuario_id = ?
+    `,
+    promocionId,
+    usuarioId,
   );
+
+  return (resultado?.cantidad ?? 0) > 0;
 }
