@@ -50,7 +50,8 @@ export const comerciosMock: Comercio[] = [
     whatsapp: "5493442400002",
     instagram: "@cafedelcentro",
     imagenes: [],
-    videoUrl: null,
+    videoUrl:
+      "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
     horarios: [
       { dia: 1, abre: "07:30", cierra: "20:00" },
       { dia: 2, abre: "07:30", cierra: "20:00" },

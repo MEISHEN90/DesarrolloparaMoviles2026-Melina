@@ -206,11 +206,14 @@ Desarrollo realizado actualmente sobre:
 - [x] Actualización automática ante cambios de conectividad.
 - [x] Aviso visual cuando la aplicación está sin conexión.
 
-### ⏳ Etapa 7 - Notificaciones, háptica y multimedia
+### 🟡 Etapa 7 — Notificaciones, háptica y multimedia
 
-- [ ] Notificaciones locales.
-- [ ] Uso justificado de háptica.
-- [ ] Reproducción multimedia cuando corresponda.
+- [x] Integración de `expo-haptics`.
+- [x] Háptica asociada al flujo real de promociones.
+- [x] Integración de `expo-notifications`.
+- [x] Notificación local disparada por el registro real de una promoción.
+- [x] Validación funcional de notificaciones locales en Android.
+- [ ] Determinación e implementación multimedia según corresponda al PRD.
 
 ### ⏳ Etapa 8 - API de la cátedra
 
