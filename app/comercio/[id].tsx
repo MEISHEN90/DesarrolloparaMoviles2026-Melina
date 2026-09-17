@@ -12,9 +12,13 @@ import {
   View,
 } from "react-native";
 
+import { obtenerUsuarioPorId } from "../../src/servicios/autenticacion";
 import { obtenerComercioPorId } from "../../src/servicios/comercios";
+import { alternarFavorito, esFavorito } from "../../src/servicios/favoritos";
+import { obtenerPromocionesPorComercio } from "../../src/servicios/promociones";
+import { obtenerResenasPorComercio } from "../../src/servicios/resenas";
 import { obtenerRubroPorId } from "../../src/servicios/rubros";
-import { Comercio, Rubro } from "../../src/tipos/modelos";
+import { Comercio, Promocion, Resena, Rubro } from "../../src/tipos/modelos";
 import { estaAbiertoAhora } from "../../src/utils/horarios";
 
 const nombresDias = [
@@ -26,6 +30,11 @@ const nombresDias = [
   "Viernes",
   "Sábado",
 ];
+
+interface ResenaConAutor {
+  resena: Resena;
+  autor: string;
+}
 
 function VideoComercio({ videoUrl }: { videoUrl: string }) {
   const player = useVideoPlayer(videoUrl, (player) => {
@@ -49,11 +58,38 @@ function VideoComercio({ videoUrl }: { videoUrl: string }) {
   );
 }
 
+function Estrellas({ cantidad }: { cantidad: number }) {
+  return (
+    <View style={styles.estrellasFila}>
+      {[1, 2, 3, 4, 5].map((estrella) => (
+        <Ionicons
+          key={estrella}
+          name={estrella <= cantidad ? "star" : "star-outline"}
+          size={16}
+        />
+      ))}
+    </View>
+  );
+}
+
+function formatearFecha(fecha: string): string {
+  return new Date(fecha).toLocaleDateString("es-AR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
 export default function ComercioDetalleScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
 
   const [comercio, setComercio] = useState<Comercio | null>(null);
   const [rubro, setRubro] = useState<Rubro | null>(null);
+  const [promocionVigente, setPromocionVigente] = useState<Promocion | null>(
+    null,
+  );
+  const [favorito, setFavorito] = useState(false);
+  const [resenas, setResenas] = useState<ResenaConAutor[]>([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -72,8 +108,41 @@ export default function ComercioDetalleScreen() {
 
         setComercio(datos);
 
-        const rubroDatos = await obtenerRubroPorId(datos.rubroId);
+        const [rubroDatos, favoritoActual, promociones, resenasDatos] =
+          await Promise.all([
+            obtenerRubroPorId(datos.rubroId),
+            esFavorito(datos.id),
+            obtenerPromocionesPorComercio(datos.id),
+            obtenerResenasPorComercio(datos.id),
+          ]);
+
         setRubro(rubroDatos);
+        setFavorito(favoritoActual);
+
+        const hoy = new Date();
+
+        const vigente =
+          promociones.find((promocion) => {
+            const desde = new Date(`${promocion.desde}T00:00:00`);
+            const hasta = new Date(`${promocion.hasta}T23:59:59`);
+
+            return hoy >= desde && hoy <= hasta;
+          }) ?? null;
+
+        setPromocionVigente(vigente);
+
+        const resenasConAutor = await Promise.all(
+          resenasDatos.map(async (resena) => {
+            const usuario = await obtenerUsuarioPorId(resena.usuarioId);
+
+            return {
+              resena,
+              autor: usuario?.nombre ?? "Usuario",
+            };
+          }),
+        );
+
+        setResenas(resenasConAutor);
       } catch {
         setError("No fue posible cargar el comercio.");
       } finally {
@@ -139,6 +208,14 @@ export default function ComercioDetalleScreen() {
     await Linking.openURL(`https://www.instagram.com/${usuario}/`);
   }
 
+  async function cambiarFavorito() {
+    if (!comercio) return;
+
+    const nuevoEstado = await alternarFavorito(comercio.id);
+
+    setFavorito(nuevoEstado);
+  }
+
   if (cargando) {
     return (
       <View style={styles.estadoContainer}>
@@ -179,7 +256,22 @@ export default function ComercioDetalleScreen() {
         contentContainerStyle={styles.container}
       >
         <View style={styles.encabezado}>
-          <Text style={styles.title}>{comercio.nombre}</Text>
+          <View style={styles.tituloFila}>
+            <Text style={styles.title}>{comercio.nombre}</Text>
+
+            <Pressable
+              onPress={cambiarFavorito}
+              accessibilityRole="button"
+              accessibilityLabel={
+                favorito
+                  ? "Quitar comercio de favoritos"
+                  : "Agregar comercio a favoritos"
+              }
+              hitSlop={10}
+            >
+              <Ionicons name={favorito ? "heart" : "heart-outline"} size={28} />
+            </Pressable>
+          </View>
 
           <Text style={styles.rubro}>
             {rubro?.nombre ?? "Rubro no informado"}
@@ -212,6 +304,32 @@ export default function ComercioDetalleScreen() {
           <Text style={styles.seccionTitulo}>Sobre el comercio</Text>
           <Text style={styles.descripcion}>{comercio.descripcion}</Text>
         </View>
+
+        {promocionVigente ? (
+          <View style={styles.promocionCard}>
+            <View style={styles.promocionEncabezado}>
+              <Text style={styles.seccionTitulo}>Promoción vigente</Text>
+
+              {promocionVigente.descuento !== null ? (
+                <View style={styles.descuentoChip}>
+                  <Text style={styles.descuentoTexto}>
+                    {promocionVigente.descuento}% OFF
+                  </Text>
+                </View>
+              ) : null}
+            </View>
+
+            <Text style={styles.promocionTitulo}>
+              {promocionVigente.titulo}
+            </Text>
+
+            <Text style={styles.text}>{promocionVigente.detalle}</Text>
+
+            <Text style={styles.promocionVigencia}>
+              Vigente hasta {promocionVigente.hasta}
+            </Text>
+          </View>
+        ) : null}
 
         <View style={styles.seccion}>
           <Text style={styles.seccionTitulo}>Contacto y ubicación</Text>
@@ -316,6 +434,60 @@ export default function ComercioDetalleScreen() {
             ))}
           </View>
         </View>
+
+        <View style={styles.seccion}>
+          <Text style={styles.seccionTitulo}>Reseñas</Text>
+
+          {resenas.length === 0 ? (
+            <View style={styles.resenaVacia}>
+              <Ionicons name="chatbubble-outline" size={24} />
+
+              <Text style={styles.text}>
+                Este comercio todavía no tiene reseñas disponibles.
+              </Text>
+            </View>
+          ) : (
+            resenas.map(({ resena, autor }) => (
+              <View key={resena.id} style={styles.resenaCard}>
+                <View style={styles.resenaEncabezado}>
+                  <View style={styles.resenaAutorContainer}>
+                    <View style={styles.avatar}>
+                      <Ionicons name="person-outline" size={18} />
+                    </View>
+
+                    <View>
+                      <Text style={styles.resenaAutor}>{autor}</Text>
+
+                      <Text style={styles.resenaFecha}>
+                        {formatearFecha(resena.creadaEn)}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <Estrellas cantidad={resena.estrellas} />
+                </View>
+
+                <Text style={styles.resenaComentario}>{resena.comentario}</Text>
+
+                {resena.respuesta ? (
+                  <View style={styles.respuestaComercio}>
+                    <View style={styles.respuestaTituloFila}>
+                      <Ionicons name="storefront-outline" size={17} />
+
+                      <Text style={styles.respuestaTitulo}>
+                        Respuesta del comercio
+                      </Text>
+                    </View>
+
+                    <Text style={styles.respuestaTexto}>
+                      {resena.respuesta}
+                    </Text>
+                  </View>
+                ) : null}
+              </View>
+            ))
+          )}
+        </View>
       </ScrollView>
     </>
   );
@@ -336,7 +508,15 @@ const styles = StyleSheet.create({
     gap: 6,
   },
 
+  tituloFila: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+
   title: {
+    flex: 1,
     fontSize: 26,
     fontWeight: "700",
   },
@@ -396,6 +576,43 @@ const styles = StyleSheet.create({
     backgroundColor: "#000",
     borderRadius: 12,
     overflow: "hidden",
+  },
+
+  promocionCard: {
+    gap: 8,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: "#999",
+    borderRadius: 12,
+  },
+
+  promocionEncabezado: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+
+  promocionTitulo: {
+    fontSize: 16,
+    fontWeight: "700",
+  },
+
+  promocionVigencia: {
+    fontSize: 13,
+  },
+
+  descuentoChip: {
+    borderWidth: 1,
+    borderColor: "#666",
+    borderRadius: 999,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+  },
+
+  descuentoTexto: {
+    fontSize: 12,
+    fontWeight: "700",
   },
 
   label: {
@@ -496,6 +713,88 @@ const styles = StyleSheet.create({
 
   chipTexto: {
     fontSize: 13,
+  },
+
+  resenaVacia: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingVertical: 8,
+  },
+
+  resenaCard: {
+    gap: 10,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: "#C7C7C7",
+    borderRadius: 12,
+  },
+
+  resenaEncabezado: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 12,
+  },
+
+  resenaAutorContainer: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 9,
+  },
+
+  avatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#999",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  resenaAutor: {
+    fontSize: 14,
+    fontWeight: "700",
+  },
+
+  resenaFecha: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+
+  estrellasFila: {
+    flexDirection: "row",
+    gap: 2,
+  },
+
+  resenaComentario: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+
+  respuestaComercio: {
+    gap: 6,
+    padding: 10,
+    borderRadius: 9,
+    backgroundColor: "#F1F1F1",
+  },
+
+  respuestaTituloFila: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+
+  respuestaTitulo: {
+    fontSize: 13,
+    fontWeight: "700",
+  },
+
+  respuestaTexto: {
+    fontSize: 13,
+    lineHeight: 19,
   },
 
   estadoContainer: {
