@@ -1,287 +1,524 @@
-# DesarrolloparaMoviles2026
+# Directorio de Comercios
 
-Aplicacion para la materia Desarrollo para Móviles, UNER.
+Aplicación móvil desarrollada como **Trabajo Integrador Final** de la asignatura **Desarrollo para Móviles — 2026**, Universidad Nacional de Entre Ríos (UNER).
 
-# OBJETIVO:
-
-● Desarrollar y entregar la versión final de la aplicación móvil que pidió el
-cliente en el PRD asignado al grupo, construida con React Native y Expo.
-La aplicación tiene que integrar servicios del dispositivo, consumo de la API
-de la cátedra, persistencia local y resguardo de credenciales, y entregarse
-como un build instalable, no como código para compilar.
-
-# CONSIGNAS DE ENTREGA:
-
-1. Formato y modalidad
-   a. Grupal, con los mismos integrantes declarados en la.
-   b. Se carga en la sección correspondiente del Campus Virtual UNER,
-   con estas dos cosas:
-
-- Link del build. APK de release generado con el perfil preview:
-  eas build --platform android --profile preview. Tiene
-  que poder instalarse y usarse sin Metro y sin la computadora
-  de nadie.
-- Código fuente. Repositorio Git (preferido) o archivo .zip. Incluir
-  eas.json y app.json. No incluir node_modules.
-  c. Fecha límite: la informada en el Campus Virtual.
-  d. Hagan el primer build de preview al menos una semana antes. El
-  primer build siempre falla por algo —un permiso, un asset, un
-  identificador— y el cupo mensual es limitado.
-
-2. Defensa oral (obligatoria)
-   a. Instancia grupal de 15 a 20 minutos, en la fecha que informe la
-   cátedra.
-   b. Se demuestra la app funcionando en un teléfono, con Expo Go o con
-   el APK entregado. Lo que se mira es la app andando, no desde dónde
-   corre.
-   c. Cada integrante explica la parte que desarrolló y responde
-   preguntas sobre su código.
-   d. Se pueden usar asistentes de IA durante el desarrollo. En la defensa
-   no. Lo que se evalúa es que puedan explicar cada línea de lo que
-   entregaron.
-   e. Sin defensa no hay integrador aprobado, aunque la entrega esté
-   completa.
-
-# EJERCICIO:
-
-Aplicación final
-Requisitos mínimos. Cada uno de estos puntos se verifica sobre la app entregada.
-No son ejemplos ni sugerencias.
-
-1. Pantallas y navegación. Las pantallas que haga falta para cubrir lo que pide
-   el PRD, conectadas con Expo Router. El alcance lo fija el cliente, no un
-   número mínimo.
-
-2. Autenticación. Registro e ingreso, con sesión que sobrevive al cierre de la
-   app. El token va en expo-secure-store. El reingreso se resuelve con expo
-   local-authentication (huella o rostro), con alternativa para el dispositivo
-   que no la tenga.
-
-3. Consumo de la API. La aplicación consume la API provista por la cátedra
-   detrás de una capa de servicios propia. Los estados de carga, vacío y error
-   tienen que verse en pantalla.
-
-4. Cámara y sistema de archivos. Uso de expo-camera —foto y lectura de
-   códigos QR cuando el PRD lo pida— o expo-image-picker, y guardado y
-   lectura en el dispositivo con la API nueva de expo-file-system (File,
-   Directory, Paths).
-
-5. Ubicación y mapas. expo-location junto con react-native-maps. Si el
-   usuario niega el permiso, la app tiene que seguir siendo usable.
-
-6. Notificaciones locales. Con expo-notifications, disparadas por un
-   hecho real de la aplicación, no por un botón de prueba.
-
-7. Persistencia y conectividad. expo-sqlite para los datos y expo
-   sqlite/kv-store para preferencias y sesión. La app tiene que abrir y
-   mostrar algo sin conexión, y avisar el estado de la red con expo-network.
-
-8. Sensores o háptica. Al menos un uso justificado de expo-sensors o expo
-   haptics, que aporte algo a la experiencia.
-
-9. Multimedia. Cuando el PRD pida audio o video —audioguías, grabaciones,
-   clips—, se resuelve con expo-audio o expo-video, con controles de
-   reproducción a la vista.
-
-10. Identidad de la aplicación. Ícono y pantalla de presentación propios, y
-    nombre del producto. El ícono va en PNG cuadrado de 1024×1024, sin
-    transparencias.
-
-Sobre las dudas. El PRD tiene huecos y contradicciones, igual que un pedido real.
-Preguntar a tiempo es parte del trabajo y suma; suponer en silencio y entregar otra
-cosa, no.
-
-# CONDICIONES DE APROBACIÓN:
-
-● El integrador se aprueba o no se aprueba: no lleva nota. Se aprueba
-cuando la app resuelve lo que pide el PRD, están los diez requisitos mínimos
-y todos los integrantes defendieron su parte. Una entrega que no llega se
-puede rehacer una vez.
+El proyecto implementa un directorio móvil de comercios para **Concepción del Uruguay**, con consulta de establecimientos, promociones, ubicación, horarios, favoritos, reseñas y funcionalidades diferenciadas para vecinos y comercios.
 
 ---
 
-# Directorio de Comercios
+## Integrantes
 
-Aplicación móvil desarrollada como Trabajo Integrador Final de la asignatura
-**Desarrollo para Móviles - 2026**.
+| Integrante |
+|---|
+| Melina Johanna Lisette Casco |
+| Daniel Marcelo Cisnero |
+| José Ignacio Debuck |
+| Marcos Gabriel Gainza |
+| María Gabriela Olivares Contreras |
+| Matías Vespa |
 
-La aplicación tiene como objetivo implementar un directorio de comercios,
-permitiendo consultar establecimientos, promociones, ubicación y funcionalidades
-asociadas a los usuarios y comercios.
+---
 
-## Rama de desarrollo
+## Repositorio y rama de desarrollo
 
-Desarrollo realizado actualmente sobre:
+Repositorio principal del grupo:
 
-`Melina-Casco---Test`
+[github.com/Ranger9707/DesarrolloparaMoviles2026](https://github.com/Ranger9707/DesarrolloparaMoviles2026)
+
+Rama de desarrollo utilizada actualmente:
+
+[`Melina-Casco---Test`](https://github.com/Ranger9707/DesarrolloparaMoviles2026/tree/Melina-Casco---Test)
+
+---
+
+## Entorno de desarrollo
+
+- **Expo SDK 54**
+- **React Native 0.81**
+- **React 19**
+- **TypeScript**
+- **Expo Router**
+- **Android Studio / Android Emulator**
+- **Node.js + npm**
+
+> El proyecto debe mantenerse en **Expo SDK 54** para conservar compatibilidad entre los integrantes del grupo.
+
+---
+
+## Objetivo
+
+Desarrollar una aplicación móvil que permita descubrir y consultar comercios, acceder a promociones, visualizar ubicaciones y horarios, utilizar funciones asociadas al dispositivo y mantener información útil disponible incluso sin conexión.
+
+La aplicación contempla dos roles principales.
+
+### Vecino
+
+Puede:
+
+- consultar comercios;
+- buscar por nombre o producto;
+- filtrar por rubro;
+- consultar comercios abiertos;
+- visualizar establecimientos en el mapa;
+- consultar promociones;
+- registrarse e iniciar sesión;
+- marcar comercios como favoritos;
+- consultar y gestionar reseñas;
+- acceder a funciones asociadas a su cuenta.
+
+### Comercio
+
+Además de las funcionalidades generales, puede:
+
+- acceder con una cuenta de tipo comercio;
+- validar promociones mediante QR;
+- registrar el uso de promociones;
+- administrar imágenes del comercio;
+- utilizar herramientas específicas desde su perfil;
+- responder reseñas;
+- gestionar información comercial.
+
+---
+
+## Funcionalidades implementadas
+
+### Navegación
+
+- Expo Router.
+- Navegación principal mediante Tabs.
+- Navegación mediante Stack.
+- Rutas dinámicas para comercios y promociones.
+- Pantallas específicas para autenticación, registro, QR e imágenes.
+
+### Directorio de comercios
+
+- Listado de comercios.
+- Búsqueda por nombre y descripción.
+- Búsqueda tolerante a mayúsculas, minúsculas y tildes.
+- Filtros por rubro.
+- Filtro **Abierto ahora**.
+- Soporte para horarios partidos.
+- Ficha ampliada de comercio.
+- Estado abierto/cerrado calculado localmente.
+- Contacto telefónico.
+- Acceso a WhatsApp.
+- Acceso a Instagram.
+- Apertura de ubicación en Google Maps.
+- Medios de pago.
+- Video de presentación.
+- Promoción vigente.
+- Favoritos persistentes por usuario.
+
+### Promociones
+
+- Listado de promociones activas.
+- Pantalla de detalle.
+- Validación mediante códigos QR.
+- Registro del uso de promociones.
+- Prevención persistente de usos duplicados.
+- Visualización de promoción vigente dentro de la ficha del comercio.
+
+Formato utilizado actualmente para QR de promociones:
+
+```text
+PROMO|<promocionId>|<usuarioId>
+```
+
+Ejemplo:
+
+```text
+PROMO|pro-002|usr-001
+```
+
+### Autenticación y sesión
+
+- Registro de usuarios.
+- Inicio de sesión.
+- Roles `vecino` y `comercio`.
+- Persistencia de sesión.
+- Token protegido mediante `expo-secure-store`.
+- Reingreso mediante autenticación biométrica.
+- Alternativa para dispositivos sin biometría.
+
+### Ubicación y mapas
+
+- Solicitud de permisos de ubicación.
+- Obtención de ubicación actual.
+- Integración con `react-native-maps`.
+- Marcadores de comercios.
+- Cálculo de distancia.
+- Comercios ordenados por cercanía.
+- Funcionamiento alternativo cuando el permiso de ubicación es rechazado.
+- Apertura de Google Maps desde la ficha del comercio.
+
+### Cámara, imágenes y archivos
+
+- Lectura de QR mediante `expo-camera`.
+- Selección de imágenes mediante `expo-image-picker`.
+- Captura mediante cámara.
+- Recorte de imágenes.
+- Guardado local con la API moderna de `expo-file-system`.
+- Uso de `File`, `Directory` y `Paths`.
+- Vista previa de archivos almacenados.
+
+### Persistencia y funcionamiento offline
+
+- Base de datos local mediante `expo-sqlite`.
+- Persistencia del uso de promociones.
+- Prevención persistente de duplicados.
+- Caché local de comercios.
+- Caché local de promociones.
+- Preferencias mediante `expo-sqlite/kv-store`.
+- Persistencia del rubro seleccionado.
+- Persistencia del filtro **Abierto ahora**.
+- Favoritos persistentes por usuario.
+- Detección de conectividad mediante `expo-network`.
+- Actualización automática frente a cambios de red.
+- Aviso visual de estado sin conexión.
+
+### Háptica
+
+Se utiliza `expo-haptics` como respuesta del dispositivo frente a acciones relevantes:
+
+- confirmación correcta del uso de una promoción;
+- errores durante la validación de códigos QR.
+
+### Notificaciones
+
+Se utiliza `expo-notifications` para notificaciones locales asociadas a eventos reales de la aplicación.
+
+Actualmente se dispara una notificación al registrar correctamente el uso de una promoción.
+
+> Expo Go puede mostrar advertencias relacionadas con notificaciones push remotas. El proyecto utiliza notificaciones locales para esta funcionalidad.
+
+### Multimedia
+
+- Integración de `expo-video`.
+- Reproducción de video en la ficha del comercio.
+- Controles visibles.
+- Reproducción/pausa.
+- Adelanto y retroceso.
+- Pantalla completa.
+
+### Reseñas
+
+Actualmente se encuentra implementada la base funcional del módulo:
+
+- modelo `Resena`;
+- mocks de reseñas;
+- servicio de consulta por comercio;
+- orden por fecha;
+- cálculo de promedio;
+- conteo de reseñas.
+
+Pendiente:
+
+- creación;
+- edición;
+- eliminación;
+- reporte;
+- respuesta del comercio;
+- integración completa en interfaz.
+
+---
+
+## Tecnologías y librerías
+
+### Dependencias principales de Expo
+
+| Librería | Uso |
+|---|---|
+| `expo` | Plataforma base del proyecto |
+| `expo-router` | Navegación basada en archivos |
+| `expo-camera` | Cámara y lectura de QR |
+| `expo-image-picker` | Selección y captura de imágenes |
+| `expo-file-system` | Manejo y persistencia de archivos |
+| `expo-location` | Geolocalización |
+| `expo-secure-store` | Almacenamiento seguro de sesión/token |
+| `expo-local-authentication` | Biometría |
+| `expo-network` | Estado de conectividad |
+| `expo-notifications` | Notificaciones locales |
+| `expo-haptics` | Respuesta háptica |
+| `expo-sqlite` | Base de datos local y KV Store |
+| `expo-video` | Reproducción multimedia |
+| `expo-linking` | Apertura de enlaces externos |
+| `expo-splash-screen` | Pantalla de inicio |
+| `expo-status-bar` | Barra de estado |
+| `expo-font` | Gestión de fuentes |
+| `expo-image` | Soporte de imágenes |
+| `expo-constants` | Acceso a configuración de Expo |
+| `expo-system-ui` | Integración visual con el sistema |
+| `expo-web-browser` | Apertura de contenido web |
+| `@expo/vector-icons` | Iconografía |
+
+### Otras dependencias relevantes
+
+| Librería | Uso |
+|---|---|
+| `react-native-maps` | Mapas y marcadores |
+| `@react-navigation/native` | Infraestructura de navegación |
+| `@react-navigation/bottom-tabs` | Navegación por pestañas |
+| `react-native-gesture-handler` | Gestos |
+| `react-native-reanimated` | Animaciones |
+| `react-native-safe-area-context` | Áreas seguras |
+| `react-native-screens` | Optimización de navegación |
+| `react-native-worklets` | Soporte para ejecución de worklets |
+| `jest` / `jest-expo` | Pruebas automatizadas |
+| `@testing-library/react-native` | Testing de componentes React Native |
+
+---
+
+## Instalación para integrantes del grupo
+
+### Recomendado: instalar exactamente las dependencias del repositorio
+
+Después de clonar o actualizar la rama:
+
+```bash
+npm ci
+```
+
+Este comando utiliza `package-lock.json` y mantiene las mismas versiones para todo el equipo.
+
+> En condiciones normales **no es necesario instalar las librerías una por una**. `npm ci` debe ser la primera opción.
+
+### Si se necesita reinstalar los paquetes Expo manualmente
+
+Utilizar `npx expo install` para que Expo seleccione versiones compatibles con **SDK 54**:
+
+```bash
+npx expo install expo-camera expo-constants expo-file-system expo-font expo-haptics expo-image expo-image-picker expo-linking expo-local-authentication expo-location expo-network expo-notifications expo-router expo-secure-store expo-splash-screen expo-sqlite expo-status-bar expo-system-ui expo-video expo-web-browser
+```
+
+Para mapas:
+
+```bash
+npx expo install react-native-maps
+```
+
+Para comprobar que todas las versiones sean compatibles:
+
+```bash
+npx expo install --check
+npx expo-doctor@latest
+```
+
+---
+
+## Arquitectura general
+
+```text
+app/
+├── (tabs)/
+├── comercio/
+├── promocion/
+├── escanear-qr.tsx
+├── imagen-comercio.tsx
+├── login.tsx
+├── registro.tsx
+└── _layout.tsx
+
+src/
+├── hooks/
+├── mocks/
+├── servicios/
+├── tipos/
+└── utils/
+
+__tests__/
+```
+
+### `app/`
+
+Contiene las pantallas y rutas gestionadas mediante Expo Router.
+
+### `src/servicios/`
+
+Centraliza la lógica relacionada con:
+
+- autenticación;
+- sesión;
+- comercios;
+- promociones;
+- reseñas;
+- favoritos;
+- SQLite;
+- caché;
+- ubicación;
+- archivos;
+- conectividad;
+- biometría;
+- notificaciones;
+- háptica.
+
+### `src/mocks/`
+
+Contiene datos simulados mientras la API de la cátedra no se encuentre disponible.
+
+### `src/tipos/`
+
+Contiene los modelos y tipos TypeScript del dominio.
+
+### `src/utils/`
+
+Contiene funciones reutilizables como horarios, distancias y validación de QR.
+
+### `__tests__/`
+
+Contiene pruebas automatizadas de lógica propia.
+
+---
+
+## Ejecución local
+
+Con Android Studio y un emulador Android iniciado:
+
+```bash
+npx expo start
+```
+
+Luego presionar:
+
+```text
+a
+```
+
+Para limpiar caché de Metro:
+
+```bash
+npx expo start --clear
+```
+
+---
+
+## Verificación del proyecto
+
+### TypeScript
+
+```bash
+npx tsc --noEmit
+```
+
+### Lint
+
+```bash
+npm run lint
+```
+
+### Tests
+
+```bash
+npm test
+```
+
+### Compatibilidad de dependencias Expo
+
+```bash
+npx expo install --check
+npx expo-doctor@latest
+```
+
+---
+
+## Credenciales de desarrollo
+
+> Estas credenciales corresponden únicamente al entorno de pruebas actual.
+
+### Usuario vecino
+
+```text
+Correo: marta@mail.com
+Contraseña: 123456
+Rol: Vecino
+```
+
+### Usuario comercio
+
+```text
+Correo: comercio@eltornillo.com
+Contraseña: 123456
+Rol: Comercio
+```
+
+---
 
 ## Estado del desarrollo
 
-### ✅ Etapa 1 - Navegación y estructura base
+| Etapa | Estado |
+|---|---|
+| 1. Navegación y estructura base | ✅ Completada |
+| 2. Tipos, mocks y servicios | ✅ Completada |
+| 3. Autenticación y sesión | ✅ Completada |
+| 4. Ubicación y mapas | ✅ Completada |
+| 5. Cámara y archivos | ✅ Completada |
+| 6. Persistencia y conectividad | ✅ Completada |
+| 7. Notificaciones, háptica y multimedia | ✅ Completada |
+| 8. API de la cátedra | ⏳ Pendiente de disponibilidad |
+| 9. Testing y revisión funcional | 🟡 En desarrollo |
+| 10. Identidad y entrega final | ⏳ Pendiente |
 
-- [x] Configuración inicial con Expo y React Native.
-- [x] Navegación implementada con Expo Router.
-- [x] Navegación principal mediante Tabs.
-- [x] Pantalla principal de Comercios.
-- [x] Pantalla de Promociones.
-- [x] Pantalla de Mapa.
-- [x] Pantalla de Perfil.
-- [x] Ruta dinámica para detalle de comercio: `/comercio/[id]`.
-- [x] Ruta dinámica para detalle de promoción: `/promocion/[id]`.
-- [x] Verificación de parámetros dinámicos.
-- [x] Navegación de retorno mediante Stack.
-- [x] Pruebas iniciales realizadas en emulador Android.
+### Revisión funcional adicional
 
-### ✅ Etapa 2 - Tipos, mocks y capa de servicios
+- [x] Ficha ampliada de comercio.
+- [x] Estado abierto/cerrado.
+- [x] Horarios comerciales y horarios partidos.
+- [x] Llamada telefónica.
+- [x] WhatsApp.
+- [x] Instagram.
+- [x] Apertura en Google Maps.
+- [x] Video de presentación.
+- [x] Promoción vigente.
+- [x] Favoritos persistentes por usuario.
+- [x] Persistencia del favorito luego de reiniciar.
+- [x] Base funcional del módulo de reseñas.
+- [ ] Crear reseñas.
+- [ ] Editar reseñas propias.
+- [ ] Eliminar reseñas propias.
+- [ ] Reportar reseñas.
+- [ ] Respuesta del comercio.
+- [ ] Filtro de mapa por rubro.
+- [ ] Revisión visual final de todas las pantallas.
 
-- [x] Definición de modelos y tipos TypeScript.
-- [x] Modelo Comercio.
-- [x] Modelo Rubro.
-- [x] Modelo Horario.
-- [x] Modelo Promoción.
-- [x] Modelo Reseña.
-- [x] Modelo Usuario.
-- [x] Datos simulados en mocks.
-- [x] Servicios asíncronos.
-- [x] Estados de carga, vacío y error.
-- [x] Listado de comercios consumiendo servicios.
-- [x] Listado de promociones consumiendo servicios.
-- [x] Detalle de comercio por ID.
-- [x] Detalle de promoción por ID.
-- [x] Filtro de comercios por rubro.
-- [x] Integración visual de rubros en la pantalla principal.
-- [x] Búsqueda de comercios por nombre y descripción.
-- [x] Búsqueda tolerante a mayúsculas, minúsculas y tildes.
-- [x] Cálculo dinámico de comercios abiertos según día y horario.
-- [x] Soporte para horarios partidos.
-- [x] Filtro "Abierto ahora".
+---
 
-### ✅ Etapa 3 - Autenticación y sesión
+## API de la cátedra
 
-- [x] Registro de usuario.
-- [x] Inicio de sesión.
-- [x] Persistencia de sesión.
-- [x] Secure Store.
-- [x] Autenticación biométrica.
-- [x] Alternativa para dispositivos sin biometría.
+La integración con la API permanece pendiente porque todavía no se dispone del material definitivo de la cátedra.
 
-### ✅ Etapa 4 - Ubicación y mapa
+Mientras tanto, el proyecto utiliza mocks detrás de una capa de servicios propia para facilitar el reemplazo progresivo cuando los endpoints estén disponibles.
 
-- [x] Permisos de ubicación.
-- [x] Ubicación actual del usuario.
-- [x] Integración con react-native-maps.
-- [x] Marcadores de comercios en el mapa.
-- [x] Comercios cercanos ordenados por distancia.
-- [x] Cálculo y formato de distancias.
-- [x] Funcionamiento alternativo sin permiso de ubicación.
+---
 
-### ✅ Etapa 5 - Cámara y archivos
-
-- [x] Uso de cámara con `expo-camera`.
-- [x] Lectura real de códigos QR.
-- [x] Interpretación y validación de QR de promociones.
-- [x] Validación de promoción y usuario asociados al QR.
-- [x] Registro del uso de una promoción.
-- [x] Prevención de usos duplicados durante la ejecución.
-- [x] Selección de imágenes desde la galería con `expo-image-picker`.
-- [x] Captura de fotografías con cámara.
-- [x] Recorte de imágenes.
-- [x] Guardado local con la API nueva de `expo-file-system`.
-- [x] Uso de `File`, `Directory` y `Paths`.
-- [x] Vista previa de archivos almacenados localmente.
-
-### ✅ Etapa 6 - Persistencia y conectividad
-
-- [x] Inicialización de base de datos local con `expo-sqlite`.
-- [x] Persistencia de usos de promociones en SQLite.
-- [x] Prevención persistente de usos duplicados de promociones.
-- [x] Preferencias locales mediante `expo-sqlite/kv-store`.
-- [x] Persistencia del rubro seleccionado.
-- [x] Persistencia del filtro "Abierto ahora".
-- [x] Caché local de comercios.
-- [x] Caché local de promociones.
-- [x] Funcionamiento offline de comercios.
-- [x] Funcionamiento offline de promociones.
-- [x] Detección del estado de red con `expo-network`.
-- [x] Actualización automática ante cambios de conectividad.
-- [x] Aviso visual cuando la aplicación está sin conexión.
-
-### ✅ Etapa 7 — Notificaciones, háptica y multimedia
-
-- [x] Integración de `expo-haptics`.
-- [x] Háptica asociada al flujo real de promociones.
-- [x] Integración de `expo-notifications`.
-- [x] Notificación local disparada por un evento real.
-- [x] Validación funcional de notificaciones locales en Android.
-- [x] Integración de `expo-video`.
-- [x] Reproducción de video en la ficha del comercio.
-- [x] Controles de reproducción visibles.
-- [x] Soporte de pantalla completa.
-
-### ⏳ Etapa 8 - API de la cátedra
-
-- [ ] Integración de API.
-- [ ] Reemplazo progresivo de mocks por servicios reales.
-- [ ] Manejo de errores de comunicación.
-
-### ⏳ Etapa 9 - Testing y revisión
-
-- [x] Configuración de Jest con jest-expo.
-- [x] Primera prueba unitaria sobre lógica propia.
-- [x] Validación de horarios partidos.
-- [x] Validación de comercio abierto por la mañana.
-- [x] Validación de cierre durante el corte del mediodía.
-- [x] Validación de reapertura por la tarde.
-- [x] Validación de horario fuera de atención.
-- [x] Validación de día sin horarios.
-- [x] Pruebas unitarias del cálculo de distancias.
-- [x] Pruebas unitarias del formato de distancias.
-- [x] Verificación TypeScript con `npx tsc --noEmit`.
-- [x] Verificación de código con `npm run lint`.
-- [x] Pruebas unitarias de interpretación y validación de códigos QR.
-- [ ] Pruebas de funcionalidades principales restantes.
-- [ ] Pruebas de estados vacío y error.
-- [ ] Pruebas de validaciones de formularios.
-- [ ] Revisión integral de navegación.
-
-### ⏳ Etapa 10 - Entrega final
+## Entrega final pendiente
 
 - [ ] Ícono propio.
-- [ ] Splash screen.
-- [ ] Nombre definitivo de la aplicación.
+- [ ] Splash screen definitivo.
+- [ ] Nombre definitivo del producto.
 - [ ] Build Android Preview.
 - [ ] APK instalable.
 - [ ] Pruebas en dispositivo físico.
 - [ ] Preparación de defensa oral.
 
-## Ejecución local del proyecto
-
-Con Android Studio abierto y un emulador Android iniciado:
+Build previsto:
 
 ```bash
-npm install
-npx expo start
-a
-
-## Comprobar TypeScript:
-
-npx tsc --noEmit
-
-## Comprobar lint:
-
-npm run lint
-
-## Ejecutar pruebas:
-
-npm test
+eas build --platform android --profile preview
 ```
 
-## Credenciales de testeo
+---
 
-Email: "marta@mail.com"
-Contraseña: 123456
-Rol: Vecino
+## Consideraciones para el equipo
 
-Email: "comercio@eltornillo.com"
-Contraseña: 123456
-Rol: Comerciante
+- Mantener el proyecto en **Expo SDK 54**.
+- Antes de trabajar, ejecutar `git pull` sobre la rama correspondiente.
+- Usar preferentemente `npm ci` para instalar dependencias.
+- Evitar actualizar Expo o React Native de forma individual sin coordinación con el grupo.
+- Verificar TypeScript, lint y tests antes de hacer push.
+- No incluir `node_modules` en commits.
+- Mantener los mocks y la capa de servicios separados para facilitar la futura integración con la API.
+
+---
+
+## Licencia
+
+Consultar el archivo [LICENSE](./LICENSE) incluido en el repositorio.
