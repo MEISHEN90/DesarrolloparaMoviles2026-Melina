@@ -28,6 +28,7 @@ Repositorio principal del grupo:
 Rama de desarrollo utilizada actualmente:
 
 [`Melina-Casco---Test`](https://github.com/Ranger9707/DesarrolloparaMoviles2026/tree/Melina-Casco---Test)
+Cada uno por favor clone o use una nueva rama para ir testeando. Aún no esta colocado nada en MAIN.
 
 ---
 
