@@ -10,6 +10,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { useVideoPlayer, VideoView } from "expo-video";
 
 import {
   guardarArchivoLocal,
@@ -20,9 +21,31 @@ import {
   obtenerMiComercio,
 } from "../src/servicios/mi-comercio";
 
+const MAX_VIDEO_BYTES = 30 * 1024 * 1024;
+const MAX_VIDEO_DURACION_MS = 30_000;
+
+function VideoPublicado({ uri }: { uri: string }) {
+  const player = useVideoPlayer(uri, (instancia) => {
+    instancia.loop = false;
+  });
+
+  return (
+    <VideoView
+      style={styles.video}
+      player={player}
+      nativeControls
+      contentFit="contain"
+      fullscreenOptions={{ enable: true }}
+    />
+  );
+}
+
 export default function ImagenComercioScreen() {
   const [imagenes, setImagenes] = useState<string[]>([]);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [imagenLocal, setImagenLocal] = useState<string | null>(null);
+  const [videoLocal, setVideoLocal] = useState<string | null>(null);
+
   const [cargando, setCargando] = useState(true);
   const [subiendo, setSubiendo] = useState(false);
   const [mensaje, setMensaje] = useState<string | null>(null);
@@ -32,13 +55,17 @@ export default function ImagenComercioScreen() {
     async function cargar() {
       try {
         setCargando(true);
+        setError(null);
+
         const comercio = await obtenerMiComercio();
+
         setImagenes(comercio.imagenes);
+        setVideoUrl(comercio.videoUrl);
       } catch (errorDesconocido) {
         setError(
           errorDesconocido instanceof Error
             ? errorDesconocido.message
-            : "No fue posible cargar las imágenes del comercio.",
+            : "No fue posible cargar el contenido del comercio.",
         );
       } finally {
         setCargando(false);
@@ -65,11 +92,7 @@ export default function ImagenComercioScreen() {
       const uriGuardada = guardarArchivoLocal(uri, nombreArchivo);
       setImagenLocal(uriGuardada);
 
-      const archivo = await subirArchivo(
-        uriGuardada,
-        nombreArchivo,
-        tipo,
-      );
+      const archivo = await subirArchivo(uriGuardada, nombreArchivo, tipo);
 
       const nuevasImagenes = [...imagenes, archivo.url];
 
@@ -84,6 +107,60 @@ export default function ImagenComercioScreen() {
         errorDesconocido instanceof Error
           ? errorDesconocido.message
           : "No fue posible subir la imagen.",
+      );
+    } finally {
+      setSubiendo(false);
+    }
+  }
+
+  async function procesarVideo(asset: ImagePicker.ImagePickerAsset) {
+    if (asset.duration !== null && asset.duration > MAX_VIDEO_DURACION_MS) {
+      setError("El video debe durar como máximo 30 segundos.");
+      return;
+    }
+
+    if (asset.fileSize !== undefined && asset.fileSize > MAX_VIDEO_BYTES) {
+      setError("El video supera el máximo de 30 MB permitido por la API.");
+      return;
+    }
+
+    const nombreOriginal = asset.fileName ?? "";
+    const esMp4 =
+      asset.mimeType === "video/mp4" ||
+      nombreOriginal.toLowerCase().endsWith(".mp4");
+
+    if (!esMp4) {
+      setError("La API admite videos en formato MP4.");
+      return;
+    }
+
+    try {
+      setSubiendo(true);
+      setMensaje(null);
+      setError(null);
+
+      const nombreArchivo = `video-comercio-${Date.now()}.mp4`;
+      const uriGuardada = guardarArchivoLocal(asset.uri, nombreArchivo);
+
+      setVideoLocal(uriGuardada);
+
+      const archivo = await subirArchivo(
+        uriGuardada,
+        nombreArchivo,
+        "video/mp4",
+      );
+
+      const actualizado = await actualizarMiComercio({
+        videoUrl: archivo.url,
+      });
+
+      setVideoUrl(actualizado.videoUrl);
+      setMensaje("El video se subió y quedó publicado en la ficha del comercio.");
+    } catch (errorDesconocido) {
+      setError(
+        errorDesconocido instanceof Error
+          ? errorDesconocido.message
+          : "No fue posible subir el video.",
       );
     } finally {
       setSubiendo(false);
@@ -109,9 +186,7 @@ export default function ImagenComercioScreen() {
       quality: 0.8,
     });
 
-    if (resultado.canceled) {
-      return;
-    }
+    if (resultado.canceled) return;
 
     const imagen = resultado.assets[0];
 
@@ -135,27 +210,93 @@ export default function ImagenComercioScreen() {
       quality: 0.8,
     });
 
-    if (resultado.canceled) {
-      return;
-    }
+    if (resultado.canceled) return;
 
     const foto = resultado.assets[0];
 
     await procesarImagen(foto.uri, foto.fileName, foto.mimeType);
   }
 
+  async function seleccionarVideo() {
+    setMensaje(null);
+    setError(null);
+
+    const permiso = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permiso.granted) {
+      setError(
+        "Se necesita permiso para acceder a los videos del dispositivo.",
+      );
+      return;
+    }
+
+    const resultado = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["videos"],
+      allowsEditing: false,
+    });
+
+    if (resultado.canceled) return;
+
+    await procesarVideo(resultado.assets[0]);
+  }
+
+  async function grabarVideo() {
+    setMensaje(null);
+    setError(null);
+
+    const permiso = await ImagePicker.requestCameraPermissionsAsync();
+
+    if (!permiso.granted) {
+      setError("Se necesita permiso para usar la cámara.");
+      return;
+    }
+
+    const resultado = await ImagePicker.launchCameraAsync({
+      mediaTypes: ["videos"],
+      allowsEditing: false,
+      videoMaxDuration: 30,
+    });
+
+    if (resultado.canceled) return;
+
+    await procesarVideo(resultado.assets[0]);
+  }
+
+  async function quitarVideo() {
+    try {
+      setSubiendo(true);
+      setMensaje(null);
+      setError(null);
+
+      const actualizado = await actualizarMiComercio({
+        videoUrl: null,
+      });
+
+      setVideoUrl(actualizado.videoUrl);
+      setMensaje("El video fue quitado de la ficha del comercio.");
+    } catch (errorDesconocido) {
+      setError(
+        errorDesconocido instanceof Error
+          ? errorDesconocido.message
+          : "No fue posible quitar el video.",
+      );
+    } finally {
+      setSubiendo(false);
+    }
+  }
+
   if (cargando) {
     return (
       <View style={styles.estado}>
         <ActivityIndicator size="large" />
-        <Text>Cargando imágenes...</Text>
+        <Text>Cargando contenido...</Text>
       </View>
     );
   }
 
   return (
     <>
-      <Stack.Screen options={{ title: "Fotos del comercio" }} />
+      <Stack.Screen options={{ title: "Fotos y video" }} />
 
       <ScrollView
         style={styles.scroll}
@@ -186,16 +327,6 @@ export default function ImagenComercioScreen() {
           <Text style={styles.botonTexto}>Seleccionar imagen</Text>
         </Pressable>
 
-        {subiendo ? (
-          <View style={styles.progreso}>
-            <ActivityIndicator />
-            <Text>Subiendo imagen...</Text>
-          </View>
-        ) : null}
-
-        {error ? <Text style={styles.error}>{error}</Text> : null}
-        {mensaje ? <Text style={styles.mensaje}>{mensaje}</Text> : null}
-
         {imagenes.length > 0 ? (
           <>
             <Text style={styles.subtitulo}>Fotos publicadas</Text>
@@ -224,6 +355,69 @@ export default function ImagenComercioScreen() {
             La última imagen también quedó guardada en el dispositivo.
           </Text>
         ) : null}
+
+        <View style={styles.separador} />
+
+        <Text style={styles.titulo}>Video de presentación</Text>
+
+        <Text style={styles.descripcion}>
+          El video debe ser MP4, durar hasta 30 segundos y pesar como máximo
+          30 MB.
+        </Text>
+
+        <Pressable
+          onPress={grabarVideo}
+          disabled={subiendo}
+          style={[styles.boton, subiendo && styles.deshabilitado]}
+          accessibilityRole="button"
+        >
+          <Text style={styles.botonTexto}>Grabar video</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={seleccionarVideo}
+          disabled={subiendo}
+          style={[styles.boton, subiendo && styles.deshabilitado]}
+          accessibilityRole="button"
+        >
+          <Text style={styles.botonTexto}>Seleccionar video</Text>
+        </Pressable>
+
+        {videoUrl ? (
+          <>
+            <Text style={styles.subtitulo}>Video publicado</Text>
+            <VideoPublicado uri={videoUrl} />
+
+            <Pressable
+              onPress={quitarVideo}
+              disabled={subiendo}
+              style={[styles.botonQuitar, subiendo && styles.deshabilitado]}
+              accessibilityRole="button"
+            >
+              <Text style={styles.botonQuitarTexto}>Quitar video</Text>
+            </Pressable>
+          </>
+        ) : (
+          <Text style={styles.vacio}>
+            Todavía no hay un video de presentación publicado.
+          </Text>
+        )}
+
+        {videoLocal ? (
+          <Text style={styles.local}>
+            El último video también quedó guardado en el dispositivo.
+          </Text>
+        ) : null}
+
+        {subiendo ? (
+          <View style={styles.progreso}>
+            <ActivityIndicator />
+            <Text>Guardando y publicando...</Text>
+          </View>
+        ) : null}
+
+        {error ? <Text style={styles.error}>{error}</Text> : null}
+        {mensaje ? <Text style={styles.mensaje}>{mensaje}</Text> : null}
 
         <Pressable
           onPress={() => router.back()}
@@ -269,21 +463,32 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 12,
   },
+  botonQuitar: {
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingVertical: 12,
+    alignItems: "center",
+    marginTop: 12,
+  },
+  botonQuitarTexto: {
+    fontSize: 15,
+    fontWeight: "700",
+  },
   deshabilitado: { opacity: 0.6 },
   botonTexto: { fontSize: 16, fontWeight: "700" },
   progreso: {
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    marginTop: 8,
+    marginTop: 16,
   },
   error: {
-    marginTop: 8,
+    marginTop: 12,
     fontSize: 15,
     fontWeight: "600",
   },
   mensaje: {
-    marginTop: 8,
+    marginTop: 12,
     fontSize: 15,
     fontWeight: "600",
   },
@@ -293,8 +498,15 @@ const styles = StyleSheet.create({
     height: 170,
     borderRadius: 12,
   },
+  video: {
+    width: "100%",
+    aspectRatio: 16 / 9,
+    backgroundColor: "#000",
+    borderRadius: 12,
+    overflow: "hidden",
+  },
   vacio: {
-    marginTop: 20,
+    marginTop: 12,
     fontSize: 15,
   },
   local: {
@@ -302,8 +514,13 @@ const styles = StyleSheet.create({
     fontSize: 13,
     opacity: 0.7,
   },
+  separador: {
+    height: 1,
+    backgroundColor: "#D0D0D0",
+    marginVertical: 28,
+  },
   botonSecundario: {
-    marginTop: 24,
+    marginTop: 28,
     paddingVertical: 12,
     alignItems: "center",
   },
