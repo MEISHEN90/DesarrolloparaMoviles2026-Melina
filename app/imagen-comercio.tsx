@@ -262,6 +262,31 @@ export default function ImagenComercioScreen() {
     await procesarVideo(resultado.assets[0]);
   }
 
+  async function quitarFoto(uri: string) {
+    try {
+      setSubiendo(true);
+      setMensaje(null);
+      setError(null);
+
+      const nuevasImagenes = imagenes.filter((imagen) => imagen !== uri);
+
+      const actualizado = await actualizarMiComercio({
+        imagenes: nuevasImagenes,
+      });
+
+      setImagenes(actualizado.imagenes);
+      setMensaje("La foto fue quitada de la ficha del comercio.");
+    } catch (errorDesconocido) {
+      setError(
+        errorDesconocido instanceof Error
+          ? errorDesconocido.message
+          : "No fue posible quitar la foto.",
+      );
+    } finally {
+      setSubiendo(false);
+    }
+  }
+
   async function quitarVideo() {
     try {
       setSubiendo(true);
@@ -337,12 +362,23 @@ export default function ImagenComercioScreen() {
               contentContainerStyle={styles.galeria}
             >
               {imagenes.map((uri, indice) => (
-                <Image
-                  key={`${uri}-${indice}`}
-                  source={{ uri }}
-                  style={styles.imagen}
-                  contentFit="cover"
-                />
+                <View key={`${uri}-${indice}`} style={styles.fotoGestion}>
+                  <Image
+                    source={{ uri }}
+                    style={styles.imagen}
+                    contentFit="cover"
+                  />
+
+                  <Pressable
+                    onPress={() => quitarFoto(uri)}
+                    disabled={subiendo}
+                    style={[styles.botonQuitarFoto, subiendo && styles.deshabilitado]}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Quitar foto ${indice + 1}`}
+                  >
+                    <Text style={styles.botonQuitarFotoTexto}>Quitar foto</Text>
+                  </Pressable>
+                </View>
               ))}
             </ScrollView>
           </>
@@ -493,10 +529,24 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   galeria: { gap: 10, paddingRight: 4 },
+  fotoGestion: {
+    width: 240,
+    gap: 8,
+  },
   imagen: {
     width: 240,
     height: 170,
     borderRadius: 12,
+  },
+  botonQuitarFoto: {
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingVertical: 9,
+    alignItems: "center",
+  },
+  botonQuitarFotoTexto: {
+    fontSize: 14,
+    fontWeight: "700",
   },
   video: {
     width: "100%",
