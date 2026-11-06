@@ -1,4 +1,4 @@
-import { Comercio } from "../tipos/modelos";
+import { Comercio, Horario } from "../tipos/modelos";
 import { pedir } from "./api";
 
 export interface DatosEditablesComercio {
@@ -8,6 +8,7 @@ export interface DatosEditablesComercio {
   telefono: string | null;
   whatsapp: string | null;
   instagram: string | null;
+  horarios: Horario[];
 }
 
 export async function obtenerMiComercio(): Promise<Comercio> {
