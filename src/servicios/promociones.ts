@@ -1,38 +1,21 @@
-import { promocionesMock } from "../mocks/promociones";
 import { Promocion } from "../tipos/modelos";
+import { pedir } from "./api";
 import { guardarPromocionesCache, obtenerPromocionesCache } from "./cache";
-import { obtenerEstadoRed } from "./red";
-
-const RETARDO_SIMULADO = 500;
-
-function esperar(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
 
 async function obtenerFuentePromociones(): Promise<Promocion[]> {
-  const estadoRed = await obtenerEstadoRed();
+  try {
+    const promociones = await pedir<Promocion[]>("/promociones?estado=vigentes");
 
-  const hayConexion = estadoRed.conectado && estadoRed.tieneInternet;
+    await guardarPromocionesCache(promociones);
 
-  if (hayConexion) {
-    await esperar(RETARDO_SIMULADO);
-
-    const promocionesActivas = promocionesMock.filter(
-      (promocion) => promocion.activa,
-    );
-
-    await guardarPromocionesCache(promocionesActivas);
-
-    return promocionesActivas;
+    return promociones;
+  } catch {
+    try {
+      return await obtenerPromocionesCache();
+    } catch {
+      return [];
+    }
   }
-
-  const promocionesGuardadas = await obtenerPromocionesCache();
-
-  if (promocionesGuardadas.length > 0) {
-    return promocionesGuardadas;
-  }
-
-  return [];
 }
 
 export async function obtenerPromociones(): Promise<Promocion[]> {
@@ -42,19 +25,28 @@ export async function obtenerPromociones(): Promise<Promocion[]> {
 export async function obtenerPromocionPorId(
   id: string,
 ): Promise<Promocion | null> {
-  const promociones = await obtenerFuentePromociones();
-
-  const promocion = promociones.find((item) => item.id === id);
-
-  return promocion ?? null;
+  try {
+    return await pedir<Promocion>(`/promociones/${id}`);
+  } catch {
+    const promociones = await obtenerPromocionesCache().catch(() => []);
+    return promociones.find((promocion) => promocion.id === id) ?? null;
+  }
 }
 
 export async function obtenerPromocionesPorComercio(
   comercioId: string,
 ): Promise<Promocion[]> {
-  const promociones = await obtenerFuentePromociones();
+  try {
+    const promociones = await pedir<Promocion[]>(
+      `/promociones?estado=vigentes&comercioId=${encodeURIComponent(comercioId)}`,
+    );
 
-  return promociones.filter(
-    (promocion) => promocion.comercioId === comercioId && promocion.activa,
-  );
+    return promociones;
+  } catch {
+    const promociones = await obtenerPromocionesCache().catch(() => []);
+
+    return promociones.filter(
+      (promocion) => promocion.comercioId === comercioId && promocion.activa,
+    );
+  }
 }
