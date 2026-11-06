@@ -1,14 +1,7 @@
-import { comerciosMock } from "../mocks/comercios";
+import { pedir } from "./api";
 import { Comercio } from "../tipos/modelos";
 import { estaAbiertoAhora } from "../utils/horarios";
 import { guardarComerciosCache, obtenerComerciosCache } from "./cache";
-import { obtenerEstadoRed } from "./red";
-
-const RETARDO_SIMULADO = 500;
-
-function esperar(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
 
 function normalizarTexto(texto: string): string {
   return texto
@@ -32,9 +25,7 @@ function filtrarComercios(
     }
 
     const coincideRubro = rubroId === null || comercio.rubroId === rubroId;
-
     const nombreNormalizado = normalizarTexto(comercio.nombre);
-
     const descripcionNormalizada = normalizarTexto(comercio.descripcion);
 
     const coincideTexto =
@@ -50,50 +41,35 @@ function filtrarComercios(
 }
 
 async function obtenerFuenteComercios(): Promise<Comercio[]> {
-  const estadoRed = await obtenerEstadoRed();
-
-  const hayConexion = estadoRed.conectado && estadoRed.tieneInternet;
-
-  if (hayConexion) {
-    await esperar(RETARDO_SIMULADO);
-
-    const comerciosActivos = comerciosMock.filter(
-      (comercio) => comercio.activo,
-    );
-
-    await guardarComerciosCache(comerciosActivos);
-
-    return comerciosActivos;
+  try {
+    const comercios = await pedir<Comercio[]>("/comercios?porPagina=1000");
+    await guardarComerciosCache(comercios);
+    return comercios;
+  } catch {
+    return obtenerComerciosCache();
   }
-
-  const comerciosGuardados = await obtenerComerciosCache();
-
-  if (comerciosGuardados.length > 0) {
-    return comerciosGuardados;
-  }
-
-  return [];
 }
 
 export async function obtenerComercios(): Promise<Comercio[]> {
-  return obtenerFuenteComercios();
+  const comercios = await obtenerFuenteComercios();
+  return comercios.filter((comercio) => comercio.activo);
 }
 
 export async function obtenerComercioPorId(
   id: string,
 ): Promise<Comercio | null> {
-  const comercios = await obtenerFuenteComercios();
-
-  const comercio = comercios.find((item) => item.id === id);
-
-  return comercio ?? null;
+  try {
+    return await pedir<Comercio>(`/comercios/${id}`);
+  } catch {
+    const guardados = await obtenerComerciosCache();
+    return guardados.find((comercio) => comercio.id === id) ?? null;
+  }
 }
 
 export async function obtenerComerciosPorRubro(
   rubroId: string,
 ): Promise<Comercio[]> {
-  const comercios = await obtenerFuenteComercios();
-
+  const comercios = await obtenerComercios();
   return comercios.filter(
     (comercio) => comercio.rubroId === rubroId && comercio.activo,
   );
@@ -105,6 +81,5 @@ export async function buscarComercios(
   soloAbiertos: boolean,
 ): Promise<Comercio[]> {
   const comercios = await obtenerFuenteComercios();
-
   return filtrarComercios(comercios, texto, rubroId, soloAbiertos);
 }
