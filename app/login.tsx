@@ -11,17 +11,19 @@ import {
 
 import { iniciarSesion } from "../src/servicios/autenticacion";
 import { guardarSesion } from "../src/servicios/sesion";
+import { validarIngreso } from "../src/utils/autenticacion";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function manejarLogin() {
-    if (!email.trim() || !password.trim()) {
-      setError("Debe completar correo electrónico y contraseña.");
+    const errorDeValidacion = validarIngreso(email, password);
+
+    if (errorDeValidacion) {
+      setError(errorDeValidacion);
       return;
     }
 
@@ -30,7 +32,6 @@ export default function LoginScreen() {
       setError(null);
 
       const resultado = await iniciarSesion(email, password);
-
       await guardarSesion(resultado.token, resultado.usuario.id);
 
       router.replace("/(tabs)/perfil");
@@ -47,11 +48,7 @@ export default function LoginScreen() {
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          title: "Iniciar sesión",
-        }}
-      />
+      <Stack.Screen options={{ title: "Iniciar sesión" }} />
 
       <View style={styles.container}>
         <Text style={styles.title}>Iniciar sesión</Text>
@@ -126,68 +123,15 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-    gap: 10,
-  },
-
-  title: {
-    fontSize: 28,
-    fontWeight: "700",
-    marginBottom: 4,
-  },
-
-  subtitle: {
-    fontSize: 16,
-    marginBottom: 18,
-  },
-
-  label: {
-    fontSize: 14,
-    fontWeight: "600",
-    marginTop: 8,
-  },
-
-  input: {
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 16,
-  },
-
-  error: {
-    marginTop: 8,
-    fontSize: 14,
-    fontWeight: "600",
-  },
-
-  boton: {
-    marginTop: 16,
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingVertical: 14,
-    alignItems: "center",
-  },
-
-  botonDeshabilitado: {
-    opacity: 0.6,
-  },
-
-  botonTexto: {
-    fontSize: 16,
-    fontWeight: "700",
-  },
-
-  botonSecundario: {
-    marginTop: 4,
-    paddingVertical: 12,
-    alignItems: "center",
-  },
-
-  botonSecundarioTexto: {
-    fontSize: 15,
-    fontWeight: "600",
-  },
+  container: { flex: 1, padding: 24, gap: 10 },
+  title: { fontSize: 28, fontWeight: "700", marginBottom: 4 },
+  subtitle: { fontSize: 16, marginBottom: 18 },
+  label: { fontSize: 14, fontWeight: "600", marginTop: 8 },
+  input: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16 },
+  error: { marginTop: 8, fontSize: 14, fontWeight: "600" },
+  boton: { marginTop: 16, borderWidth: 1, borderRadius: 10, paddingVertical: 14, alignItems: "center" },
+  botonDeshabilitado: { opacity: 0.6 },
+  botonTexto: { fontSize: 16, fontWeight: "700" },
+  botonSecundario: { marginTop: 4, paddingVertical: 12, alignItems: "center" },
+  botonSecundarioTexto: { fontSize: 15, fontWeight: "600" },
 });
