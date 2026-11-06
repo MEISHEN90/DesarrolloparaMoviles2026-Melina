@@ -4,6 +4,7 @@ import { router, Stack } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -266,6 +267,26 @@ export default function ImagenComercioScreen() {
     await procesarVideo(resultado.assets[0]);
   }
 
+  function confirmarQuitarFoto(uri: string) {
+    Alert.alert(
+      "Eliminar foto",
+      "¿Está seguro de que desea quitar esta foto de la ficha del comercio?",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
+        },
+        {
+          text: "Eliminar",
+          style: "destructive",
+          onPress: () => {
+            void quitarFoto(uri);
+          },
+        },
+      ],
+    );
+  }
+
   async function quitarFoto(uri: string) {
     try {
       setSubiendo(true);
@@ -289,6 +310,26 @@ export default function ImagenComercioScreen() {
     } finally {
       setSubiendo(false);
     }
+  }
+
+  function confirmarQuitarVideo() {
+    Alert.alert(
+      "Eliminar video",
+      "¿Está seguro de que desea quitar el video de presentación de la ficha del comercio?",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
+        },
+        {
+          text: "Eliminar",
+          style: "destructive",
+          onPress: () => {
+            void quitarVideo();
+          },
+        },
+      ],
+    );
   }
 
   async function quitarVideo() {
@@ -374,7 +415,7 @@ export default function ImagenComercioScreen() {
                   />
 
                   <Pressable
-                    onPress={() => quitarFoto(uri)}
+                    onPress={() => confirmarQuitarFoto(uri)}
                     disabled={subiendo}
                     style={[styles.botonQuitarFoto, subiendo && styles.deshabilitado]}
                     accessibilityRole="button"
@@ -429,7 +470,7 @@ export default function ImagenComercioScreen() {
             <VideoPublicado uri={videoUrl} />
 
             <Pressable
-              onPress={quitarVideo}
+              onPress={confirmarQuitarVideo}
               disabled={subiendo}
               style={[styles.botonQuitar, subiendo && styles.deshabilitado]}
               accessibilityRole="button"
