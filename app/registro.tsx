@@ -1,39 +1,36 @@
 import { router, Stack } from "expo-router";
 import { useState } from "react";
 import {
-    ActivityIndicator,
-    Pressable,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from "react-native";
 
 import { registrarUsuario } from "../src/servicios/autenticacion";
 import { guardarSesion } from "../src/servicios/sesion";
+import { validarRegistro } from "../src/utils/autenticacion";
 
 export default function RegistroScreen() {
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmarPassword, setConfirmarPassword] = useState("");
-
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function manejarRegistro() {
-    if (
-      !nombre.trim() ||
-      !email.trim() ||
-      !password.trim() ||
-      !confirmarPassword.trim()
-    ) {
-      setError("Debe completar todos los campos.");
-      return;
-    }
+    const errorDeValidacion = validarRegistro(
+      nombre,
+      email,
+      password,
+      confirmarPassword,
+    );
 
-    if (password !== confirmarPassword) {
-      setError("Las contraseñas no coinciden.");
+    if (errorDeValidacion) {
+      setError(errorDeValidacion);
       return;
     }
 
@@ -41,12 +38,7 @@ export default function RegistroScreen() {
       setCargando(true);
       setError(null);
 
-      const resultado = await registrarUsuario({
-        nombre,
-        email,
-        password,
-      });
-
+      const resultado = await registrarUsuario({ nombre, email, password });
       await guardarSesion(resultado.token, resultado.usuario.id);
 
       router.replace("/(tabs)/perfil");
@@ -63,11 +55,7 @@ export default function RegistroScreen() {
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          title: "Crear cuenta",
-        }}
-      />
+      <Stack.Screen options={{ title: "Crear cuenta" }} />
 
       <View style={styles.container}>
         <Text style={styles.title}>Crear cuenta</Text>
@@ -77,7 +65,6 @@ export default function RegistroScreen() {
         </Text>
 
         <Text style={styles.label}>Nombre</Text>
-
         <TextInput
           value={nombre}
           onChangeText={setNombre}
@@ -88,7 +75,6 @@ export default function RegistroScreen() {
         />
 
         <Text style={styles.label}>Correo electrónico</Text>
-
         <TextInput
           value={email}
           onChangeText={setEmail}
@@ -101,11 +87,10 @@ export default function RegistroScreen() {
         />
 
         <Text style={styles.label}>Contraseña</Text>
-
         <TextInput
           value={password}
           onChangeText={setPassword}
-          placeholder="Mínimo 6 caracteres"
+          placeholder="Mínimo 8 caracteres"
           secureTextEntry
           autoCapitalize="none"
           style={styles.input}
@@ -113,7 +98,6 @@ export default function RegistroScreen() {
         />
 
         <Text style={styles.label}>Confirmar contraseña</Text>
-
         <TextInput
           value={confirmarPassword}
           onChangeText={setConfirmarPassword}
@@ -154,68 +138,15 @@ export default function RegistroScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-    gap: 10,
-  },
-
-  title: {
-    fontSize: 28,
-    fontWeight: "700",
-    marginBottom: 4,
-  },
-
-  subtitle: {
-    fontSize: 16,
-    marginBottom: 18,
-  },
-
-  label: {
-    fontSize: 14,
-    fontWeight: "600",
-    marginTop: 8,
-  },
-
-  input: {
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 16,
-  },
-
-  error: {
-    marginTop: 8,
-    fontSize: 14,
-    fontWeight: "600",
-  },
-
-  boton: {
-    marginTop: 16,
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingVertical: 14,
-    alignItems: "center",
-  },
-
-  botonDeshabilitado: {
-    opacity: 0.6,
-  },
-
-  botonTexto: {
-    fontSize: 16,
-    fontWeight: "700",
-  },
-
-  botonSecundario: {
-    marginTop: 4,
-    paddingVertical: 12,
-    alignItems: "center",
-  },
-
-  botonSecundarioTexto: {
-    fontSize: 15,
-    fontWeight: "600",
-  },
+  container: { flex: 1, padding: 24, gap: 10 },
+  title: { fontSize: 28, fontWeight: "700", marginBottom: 4 },
+  subtitle: { fontSize: 16, marginBottom: 18 },
+  label: { fontSize: 14, fontWeight: "600", marginTop: 8 },
+  input: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16 },
+  error: { marginTop: 8, fontSize: 14, fontWeight: "600" },
+  boton: { marginTop: 16, borderWidth: 1, borderRadius: 10, paddingVertical: 14, alignItems: "center" },
+  botonDeshabilitado: { opacity: 0.6 },
+  botonTexto: { fontSize: 16, fontWeight: "700" },
+  botonSecundario: { marginTop: 4, paddingVertical: 12, alignItems: "center" },
+  botonSecundarioTexto: { fontSize: 15, fontWeight: "600" },
 });
