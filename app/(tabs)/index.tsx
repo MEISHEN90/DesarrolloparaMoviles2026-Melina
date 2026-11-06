@@ -142,6 +142,7 @@ export default function ComerciosScreen() {
 
       <ScrollView
         horizontal
+        style={styles.rubrosScroll}
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.rubrosContainer}
       >
@@ -296,9 +297,14 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
 
+  rubrosScroll: {
+    flexGrow: 0,
+    marginBottom: 12,
+  },
+
   rubrosContainer: {
+    alignItems: "center",
     gap: 8,
-    paddingBottom: 12,
   },
 
   chip: {
