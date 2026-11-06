@@ -15,6 +15,8 @@ import {
 } from "../../src/servicios/biometria";
 import {
   cerrarSesion,
+  estaSesionDesbloqueada,
+  marcarSesionDesbloqueada,
   obtenerUsuarioSesionId,
 } from "../../src/servicios/sesion";
 import { Usuario } from "../../src/tipos/modelos";
@@ -41,6 +43,11 @@ export default function PerfilScreen() {
       setUsuarioSesionId(usuarioId);
 
       if (!usuarioId) {
+        return;
+      }
+
+      if (estaSesionDesbloqueada()) {
+        await cargarUsuario();
         return;
       }
 
@@ -77,6 +84,7 @@ export default function PerfilScreen() {
         return;
       }
 
+      marcarSesionDesbloqueada();
       await cargarUsuario();
       setRequiereBiometria(false);
     } finally {
