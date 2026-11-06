@@ -9,6 +9,8 @@ export interface DatosEditablesComercio {
   whatsapp: string | null;
   instagram: string | null;
   horarios: Horario[];
+  imagenes: string[];
+  videoUrl: string | null;
 }
 
 export async function obtenerMiComercio(): Promise<Comercio> {
