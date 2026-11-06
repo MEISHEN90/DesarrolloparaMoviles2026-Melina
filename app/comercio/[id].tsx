@@ -13,7 +13,10 @@ import {
   View,
 } from "react-native";
 
-import { obtenerUsuarioPorId } from "../../src/servicios/autenticacion";
+import {
+  obtenerUsuarioActual,
+  obtenerUsuarioPorId,
+} from "../../src/servicios/autenticacion";
 import { obtenerComercioPorId } from "../../src/servicios/comercios";
 import { alternarFavorito, esFavorito } from "../../src/servicios/favoritos";
 import { obtenerPromocionesPorComercio } from "../../src/servicios/promociones";
@@ -128,6 +131,7 @@ export default function ComercioDetalleScreen() {
     null,
   );
   const [favorito, setFavorito] = useState(false);
+  const [esVecino, setEsVecino] = useState(false);
   const [resenas, setResenas] = useState<ResenaConAutor[]>([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -147,15 +151,19 @@ export default function ComercioDetalleScreen() {
 
         setComercio(datos);
 
+        const usuarioActual = await obtenerUsuarioActual();
+        const usuarioEsVecino = usuarioActual?.rol === "vecino";
+
         const [rubroDatos, favoritoActual, promociones, resenasDatos] =
           await Promise.all([
             obtenerRubroPorId(datos.rubroId),
-            esFavorito(datos.id),
+            usuarioEsVecino ? esFavorito(datos.id) : Promise.resolve(false),
             obtenerPromocionesPorComercio(datos.id),
             obtenerResenasPorComercio(datos.id),
           ]);
 
         setRubro(rubroDatos);
+        setEsVecino(usuarioEsVecino);
         setFavorito(favoritoActual);
 
         setPromocionVigente(promociones[0] ?? null);
@@ -288,18 +296,23 @@ export default function ComercioDetalleScreen() {
           <View style={styles.tituloFila}>
             <Text style={styles.title}>{comercio.nombre}</Text>
 
-            <Pressable
-              onPress={cambiarFavorito}
-              accessibilityRole="button"
-              accessibilityLabel={
-                favorito
-                  ? "Quitar comercio de favoritos"
-                  : "Agregar comercio a favoritos"
-              }
-              hitSlop={10}
-            >
-              <Ionicons name={favorito ? "heart" : "heart-outline"} size={28} />
-            </Pressable>
+            {esVecino ? (
+              <Pressable
+                onPress={cambiarFavorito}
+                accessibilityRole="button"
+                accessibilityLabel={
+                  favorito
+                    ? "Quitar comercio de favoritos"
+                    : "Agregar comercio a favoritos"
+                }
+                hitSlop={10}
+              >
+                <Ionicons
+                  name={favorito ? "heart" : "heart-outline"}
+                  size={28}
+                />
+              </Pressable>
+            ) : null}
           </View>
 
           <Text style={styles.rubro}>
