@@ -5,6 +5,14 @@ import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { obtenerPromocionPorId } from "../../src/servicios/promociones";
 import { Promocion } from "../../src/tipos/modelos";
 
+function formatearFecha(fecha: string): string {
+  return new Date(fecha).toLocaleDateString("es-AR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
 export default function PromocionDetalleScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
 
@@ -78,7 +86,8 @@ export default function PromocionDetalleScreen() {
 
         <Text style={styles.label}>Vigencia</Text>
         <Text style={styles.text}>
-          Desde {promocion.desde} hasta {promocion.hasta}
+          Desde {formatearFecha(promocion.desde)} hasta{" "}
+          {formatearFecha(promocion.hasta)}
         </Text>
 
         <Text style={styles.label}>Exclusiva de la app</Text>
