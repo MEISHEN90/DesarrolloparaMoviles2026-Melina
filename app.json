@@ -53,7 +53,8 @@
       "router": {},
       "eas": {
         "projectId": "391ba1cb-608c-433f-b97c-8becfb67aa21"
-      }
+      },
+      "apiUrl": "http://10.0.2.2:3000"
     }
   }
 }
