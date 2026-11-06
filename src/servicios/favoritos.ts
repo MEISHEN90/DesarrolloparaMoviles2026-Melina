@@ -33,7 +33,6 @@ export async function obtenerFavoritos(): Promise<string[]> {
 
 export async function esFavorito(comercioId: string): Promise<boolean> {
   const favoritos = await obtenerFavoritos();
-
   return favoritos.includes(comercioId);
 }
 
@@ -63,13 +62,16 @@ export async function quitarFavorito(comercioId: string): Promise<void> {
 
   const clave = construirClave(usuarioId);
   const favoritos = await obtenerFavoritos();
-
   const nuevosFavoritos = favoritos.filter((id) => id !== comercioId);
 
   await Storage.setItem(clave, JSON.stringify(nuevosFavoritos));
 }
 
 export async function alternarFavorito(comercioId: string): Promise<boolean> {
+  if (!(await obtenerUsuarioActual())) {
+    return false;
+  }
+
   const favoritoActual = await esFavorito(comercioId);
 
   if (favoritoActual) {
