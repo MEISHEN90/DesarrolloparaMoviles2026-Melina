@@ -107,7 +107,7 @@ async function quitarDelCache(id: string): Promise<void> {
   await db.runAsync("DELETE FROM resenas_cache WHERE id = ?", id);
 }
 
-export async function obtenerResenasPorComercio(
+export async function obtenerResenasConEstado(
   comercioId: string,
 ): Promise<{ resenas: Resena[]; desdeCache: boolean }> {
   let delServidor: Resena[];
@@ -142,17 +142,24 @@ export async function obtenerResenasPorComercio(
   };
 }
 
+export async function obtenerResenasPorComercio(
+  comercioId: string,
+): Promise<Resena[]> {
+  const { resenas } = await obtenerResenasConEstado(comercioId);
+  return resenas;
+}
+
 export async function obtenerPromedioResenas(
   comercioId: string,
 ): Promise<number> {
-  const { resenas } = await obtenerResenasPorComercio(comercioId);
+  const { resenas } = await obtenerResenasConEstado(comercioId);
   return calcularPromedio(resenas);
 }
 
 export async function obtenerCantidadResenas(
   comercioId: string,
 ): Promise<number> {
-  const { resenas } = await obtenerResenasPorComercio(comercioId);
+  const { resenas } = await obtenerResenasConEstado(comercioId);
   return resenas.length;
 }
 
