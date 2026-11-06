@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { useVideoPlayer, VideoView } from "expo-video";
 import { useEffect, useMemo, useState } from "react";
@@ -54,6 +55,44 @@ function VideoComercio({ videoUrl }: { videoUrl: string }) {
           enable: true,
         }}
       />
+    </View>
+  );
+}
+
+function GaleriaComercio({ imagenes }: { imagenes: string[] }) {
+  if (imagenes.length === 0) {
+    return (
+      <View style={styles.seccion}>
+        <Text style={styles.seccionTitulo}>Fotos</Text>
+
+        <View style={styles.fotosVacias}>
+          <Ionicons name="images-outline" size={24} />
+          <Text style={styles.text}>Este comercio todavía no publicó fotos.</Text>
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.seccion}>
+      <Text style={styles.seccionTitulo}>Fotos</Text>
+
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.galeriaContenido}
+      >
+        {imagenes.map((uri, indice) => (
+          <Image
+            key={`${uri}-${indice}`}
+            source={{ uri }}
+            style={styles.fotoComercio}
+            contentFit="cover"
+            transition={200}
+            accessibilityLabel={`Foto ${indice + 1} del comercio`}
+          />
+        ))}
+      </ScrollView>
     </View>
   );
 }
@@ -285,6 +324,8 @@ export default function ComercioDetalleScreen() {
             </Text>
           </View>
         </View>
+
+        <GaleriaComercio imagenes={comercio.imagenes} />
 
         {comercio.videoUrl ? (
           <VideoComercio videoUrl={comercio.videoUrl} />
@@ -558,6 +599,29 @@ const styles = StyleSheet.create({
   descripcion: {
     fontSize: 15,
     lineHeight: 21,
+  },
+
+  galeriaContenido: {
+    gap: 10,
+    paddingRight: 4,
+  },
+
+  fotoComercio: {
+    width: 260,
+    height: 180,
+    borderRadius: 12,
+    backgroundColor: "#EAEAEA",
+  },
+
+  fotosVacias: {
+    minHeight: 90,
+    borderWidth: 1,
+    borderColor: "#C7C7C7",
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    padding: 16,
   },
 
   video: {
