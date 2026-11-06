@@ -8,7 +8,7 @@ import {
   View,
 } from "react-native";
 
-import { obtenerUsuarioPorId } from "../../src/servicios/autenticacion";
+import { obtenerUsuarioActual } from "../../src/servicios/autenticacion";
 import {
   autenticarConBiometria,
   biometriaDisponible,
@@ -26,10 +26,9 @@ export default function PerfilScreen() {
   const [autenticando, setAutenticando] = useState(false);
   const [usuarioSesionId, setUsuarioSesionId] = useState<string | null>(null);
 
-  const cargarUsuario = useCallback(async (id: string) => {
-    const usuarioEncontrado = await obtenerUsuarioPorId(id);
-
-    setUsuario(usuarioEncontrado);
+  const cargarUsuario = useCallback(async () => {
+    const usuarioActual = await obtenerUsuarioActual();
+    setUsuario(usuarioActual);
   }, []);
 
   const verificarSesion = useCallback(async () => {
@@ -39,7 +38,6 @@ export default function PerfilScreen() {
       setRequiereBiometria(false);
 
       const usuarioId = await obtenerUsuarioSesionId();
-
       setUsuarioSesionId(usuarioId);
 
       if (!usuarioId) {
@@ -49,7 +47,7 @@ export default function PerfilScreen() {
       const disponible = await biometriaDisponible();
 
       if (!disponible) {
-        await cargarUsuario(usuarioId);
+        await cargarUsuario();
         return;
       }
 
@@ -79,7 +77,7 @@ export default function PerfilScreen() {
         return;
       }
 
-      await cargarUsuario(usuarioSesionId);
+      await cargarUsuario();
       setRequiereBiometria(false);
     } finally {
       setAutenticando(false);
@@ -88,7 +86,6 @@ export default function PerfilScreen() {
 
   async function manejarCerrarSesion() {
     await cerrarSesion();
-
     setUsuario(null);
     setUsuarioSesionId(null);
     setRequiereBiometria(false);
@@ -98,7 +95,6 @@ export default function PerfilScreen() {
     return (
       <View style={styles.estadoContainer}>
         <ActivityIndicator size="large" />
-
         <Text style={styles.descripcion}>Verificando sesión...</Text>
       </View>
     );
@@ -170,15 +166,12 @@ export default function PerfilScreen() {
       <Text style={styles.title}>Mi perfil</Text>
 
       <Text style={styles.label}>Nombre</Text>
-
       <Text style={styles.descripcion}>{usuario.nombre}</Text>
 
       <Text style={styles.label}>Correo electrónico</Text>
-
       <Text style={styles.descripcion}>{usuario.email}</Text>
 
       <Text style={styles.label}>Tipo de cuenta</Text>
-
       <Text style={styles.descripcion}>
         {usuario.rol === "vecino" ? "Vecino" : "Comercio"}
       </Text>
@@ -225,80 +218,17 @@ export default function PerfilScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-  },
-
-  estadoContainer: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 12,
-  },
-
-  title: {
-    fontSize: 26,
-    fontWeight: "700",
-    marginBottom: 16,
-  },
-
-  label: {
-    fontSize: 14,
-    fontWeight: "700",
-    marginTop: 8,
-  },
-
-  descripcion: {
-    fontSize: 16,
-    marginBottom: 12,
-  },
-
-  seccionComercio: {
-    marginTop: 12,
-    paddingTop: 16,
-    borderTopWidth: 1,
-  },
-
-  seccionTitulo: {
-    fontSize: 20,
-    fontWeight: "700",
-    marginBottom: 8,
-  },
-
-  boton: {
-    marginTop: 12,
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingVertical: 14,
-    alignItems: "center",
-  },
-
-  botonCerrarSesion: {
-    marginTop: 24,
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingVertical: 14,
-    alignItems: "center",
-  },
-
-  botonDeshabilitado: {
-    opacity: 0.6,
-  },
-
-  botonTexto: {
-    fontSize: 16,
-    fontWeight: "700",
-  },
-
-  botonSecundario: {
-    marginTop: 8,
-    paddingVertical: 12,
-    alignItems: "center",
-  },
-
-  botonSecundarioTexto: {
-    fontSize: 15,
-    fontWeight: "600",
-  },
+  container: { flex: 1, padding: 24 },
+  estadoContainer: { flex: 1, alignItems: "center", justifyContent: "center", gap: 12 },
+  title: { fontSize: 26, fontWeight: "700", marginBottom: 16 },
+  label: { fontSize: 14, fontWeight: "700", marginTop: 8 },
+  descripcion: { fontSize: 16, marginBottom: 12 },
+  seccionComercio: { marginTop: 12, paddingTop: 16, borderTopWidth: 1 },
+  seccionTitulo: { fontSize: 20, fontWeight: "700", marginBottom: 8 },
+  boton: { marginTop: 12, borderWidth: 1, borderRadius: 10, paddingVertical: 14, alignItems: "center" },
+  botonCerrarSesion: { marginTop: 24, borderWidth: 1, borderRadius: 10, paddingVertical: 14, alignItems: "center" },
+  botonDeshabilitado: { opacity: 0.6 },
+  botonTexto: { fontSize: 16, fontWeight: "700" },
+  botonSecundario: { marginTop: 8, paddingVertical: 12, alignItems: "center" },
+  botonSecundarioTexto: { fontSize: 15, fontWeight: "600" },
 });
