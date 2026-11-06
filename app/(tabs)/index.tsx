@@ -299,19 +299,25 @@ const styles = StyleSheet.create({
 
   rubrosScroll: {
     flexGrow: 0,
-    marginBottom: 12,
+    minHeight: 48,
+    maxHeight: 48,
+    marginBottom: 14,
   },
 
   rubrosContainer: {
     alignItems: "center",
     gap: 8,
+    paddingRight: 8,
   },
 
   chip: {
+    minHeight: 36,
     borderWidth: 1,
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 8,
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   chipSeleccionado: {
@@ -320,6 +326,7 @@ const styles = StyleSheet.create({
 
   chipTexto: {
     fontSize: 14,
+    lineHeight: 18,
   },
 
   chipTextoSeleccionado: {
