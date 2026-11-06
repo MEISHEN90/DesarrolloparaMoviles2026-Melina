@@ -21,9 +21,7 @@ import {
   actualizarMiComercio,
   obtenerMiComercio,
 } from "../src/servicios/mi-comercio";
-
-const MAX_VIDEO_BYTES = 30 * 1024 * 1024;
-const MAX_VIDEO_DURACION_MS = 30_000;
+import { validarVideoComercio } from "../src/utils/multimedia-comercio";
 
 function VideoPublicado({ uri }: { uri: string }) {
   const player = useVideoPlayer(uri, (instancia) => {
@@ -115,27 +113,10 @@ export default function ImagenComercioScreen() {
   }
 
   async function procesarVideo(asset: ImagePicker.ImagePickerAsset) {
-    if (
-      asset.duration !== null &&
-      asset.duration !== undefined &&
-      asset.duration > MAX_VIDEO_DURACION_MS
-    ) {
-      setError("El video debe durar como máximo 30 segundos.");
-      return;
-    }
+    const errorValidacion = validarVideoComercio(asset);
 
-    if (asset.fileSize !== undefined && asset.fileSize > MAX_VIDEO_BYTES) {
-      setError("El video supera el máximo de 30 MB permitido por la API.");
-      return;
-    }
-
-    const nombreOriginal = asset.fileName ?? "";
-    const esMp4 =
-      asset.mimeType === "video/mp4" ||
-      nombreOriginal.toLowerCase().endsWith(".mp4");
-
-    if (!esMp4) {
-      setError("La API admite videos en formato MP4.");
+    if (errorValidacion) {
+      setError(errorValidacion);
       return;
     }
 
