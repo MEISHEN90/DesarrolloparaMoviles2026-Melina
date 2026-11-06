@@ -215,9 +215,9 @@ export default function PerfilScreen() {
             onPress={() => router.push("/imagen-comercio")}
             style={styles.boton}
             accessibilityRole="button"
-            accessibilityLabel="Gestionar imagen del comercio"
+            accessibilityLabel="Gestionar fotos y video del comercio"
           >
-            <Text style={styles.botonTexto}>Gestionar imagen del comercio</Text>
+            <Text style={styles.botonTexto}>Gestionar fotos y video</Text>
           </Pressable>
         </View>
       )}
