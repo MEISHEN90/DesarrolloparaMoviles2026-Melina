@@ -1,7 +1,7 @@
+import { ErrorApi, pedir } from "./api";
+import { cerrarSesion } from "./sesion";
 import { usuariosMock } from "../mocks/usuarios";
 import { Usuario } from "../tipos/modelos";
-
-const RETARDO_SIMULADO = 500;
 
 interface ResultadoLogin {
   usuario: Usuario;
@@ -14,24 +14,9 @@ interface DatosRegistro {
   password: string;
 }
 
-/*
- * Mientras trabajamos con mocks, guardamos temporalmente
- * las contraseñas en memoria.
- *
- * Los usuarios iniciales de usuariosMock usan "123456".
- * Los usuarios registrados durante la ejecución conservan
- * la contraseña que eligieron.
- *
- * Más adelante esto será reemplazado por la API real.
- */
-const credencialesMock = new Map<string, string>();
-
-for (const usuario of usuariosMock) {
-  credencialesMock.set(usuario.id, "123456");
-}
-
-function esperar(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+interface RespuestaSesion {
+  token: string;
+  usuario: Usuario;
 }
 
 function normalizarEmail(email: string): string {
@@ -42,80 +27,44 @@ export async function iniciarSesion(
   email: string,
   password: string,
 ): Promise<ResultadoLogin> {
-  await esperar(RETARDO_SIMULADO);
+  const datos = await pedir<RespuestaSesion>("/auth/ingreso", {
+    metodo: "POST",
+    cuerpo: {
+      email: normalizarEmail(email),
+      contrasena: password,
+    },
+  });
 
-  const emailNormalizado = normalizarEmail(email);
-
-  const usuario = usuariosMock.find(
-    (item) => normalizarEmail(item.email) === emailNormalizado,
-  );
-
-  if (!usuario) {
-    throw new Error("Credenciales inválidas.");
-  }
-
-  const passwordGuardada = credencialesMock.get(usuario.id);
-
-  if (!passwordGuardada || password !== passwordGuardada) {
-    throw new Error("Credenciales inválidas.");
-  }
-
-  return {
-    usuario,
-    token: `token-${usuario.id}`,
-  };
+  return { usuario: datos.usuario, token: datos.token };
 }
 
 export async function registrarUsuario(
   datos: DatosRegistro,
 ): Promise<ResultadoLogin> {
-  await esperar(RETARDO_SIMULADO);
+  const respuesta = await pedir<RespuestaSesion>("/auth/registro", {
+    metodo: "POST",
+    cuerpo: {
+      nombre: datos.nombre.trim(),
+      email: normalizarEmail(datos.email),
+      contrasena: datos.password,
+    },
+  });
 
-  const nombre = datos.nombre.trim();
-  const email = normalizarEmail(datos.email);
-  const password = datos.password;
+  return { usuario: respuesta.usuario, token: respuesta.token };
+}
 
-  if (!nombre || !email || !password.trim()) {
-    throw new Error("Debe completar todos los campos.");
+export async function obtenerUsuarioActual(): Promise<Usuario | null> {
+  try {
+    return await pedir<Usuario>("/yo", { conSesion: true });
+  } catch (error) {
+    if (error instanceof ErrorApi && error.codigo === "NO_AUTENTICADO") {
+      await cerrarSesion();
+    }
+
+    return null;
   }
-
-  if (password.length < 6) {
-    throw new Error("La contraseña debe tener al menos 6 caracteres.");
-  }
-
-  const emailYaRegistrado = usuariosMock.some(
-    (item) => normalizarEmail(item.email) === email,
-  );
-
-  if (emailYaRegistrado) {
-    throw new Error("Ya existe una cuenta con ese correo electrónico.");
-  }
-
-  const nuevoUsuario: Usuario = {
-    id: `usr-${Date.now()}`,
-    nombre,
-    email,
-    rol: "vecino",
-    comercioId: null,
-    favoritos: [],
-    rubrosDeInteres: [],
-    avisosActivos: true,
-  };
-
-  usuariosMock.push(nuevoUsuario);
-
-  credencialesMock.set(nuevoUsuario.id, password);
-
-  return {
-    usuario: nuevoUsuario,
-    token: `token-${nuevoUsuario.id}`,
-  };
 }
 
 export async function obtenerUsuarioPorId(id: string): Promise<Usuario | null> {
-  await esperar(RETARDO_SIMULADO);
-
-  const usuario = usuariosMock.find((item) => item.id === id);
-
-  return usuario ?? null;
+  return usuariosMock.find((usuario) => usuario.id === id) ?? null;
 }
