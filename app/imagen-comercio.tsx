@@ -114,7 +114,11 @@ export default function ImagenComercioScreen() {
   }
 
   async function procesarVideo(asset: ImagePicker.ImagePickerAsset) {
-    if (asset.duration !== null && asset.duration > MAX_VIDEO_DURACION_MS) {
+    if (
+      asset.duration !== null &&
+      asset.duration !== undefined &&
+      asset.duration > MAX_VIDEO_DURACION_MS
+    ) {
       setError("El video debe durar como máximo 30 segundos.");
       return;
     }
