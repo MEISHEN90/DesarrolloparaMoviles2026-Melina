@@ -16,6 +16,10 @@ const URL_BASE =
   Constants.expoConfig?.extra?.apiUrl ??
   "http://10.0.2.2:3000";
 
+export function obtenerUrlBaseApi(): string {
+  return URL_BASE;
+}
+
 export class ErrorApi extends Error {
   codigo: string;
 
