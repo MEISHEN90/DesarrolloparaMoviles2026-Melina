@@ -8,7 +8,6 @@ export async function obtenerBaseDatos(): Promise<SQLite.SQLiteDatabase> {
   }
 
   baseDatos = await SQLite.openDatabaseAsync("directorio-comercios.db");
-
   return baseDatos;
 }
 
@@ -41,6 +40,25 @@ export async function inicializarBaseDatos(): Promise<void> {
       id TEXT PRIMARY KEY NOT NULL,
       datos TEXT NOT NULL,
       actualizado_en TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS resenas_cache (
+      id TEXT PRIMARY KEY NOT NULL,
+      comercio_id TEXT NOT NULL,
+      datos TEXT NOT NULL,
+      actualizado_en TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS resenas_locales (
+      id TEXT PRIMARY KEY NOT NULL,
+      comercio_id TEXT NOT NULL,
+      usuario_id TEXT NOT NULL,
+      estrellas INTEGER NOT NULL,
+      comentario TEXT NOT NULL,
+      respuesta TEXT,
+      reportada INTEGER NOT NULL DEFAULT 0,
+      creada_en TEXT NOT NULL,
+      sincronizada INTEGER NOT NULL DEFAULT 0
     );
   `);
 }
