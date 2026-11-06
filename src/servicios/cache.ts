@@ -29,19 +29,21 @@ export async function guardarComerciosCache(
 }
 
 export async function obtenerComerciosCache(): Promise<Comercio[]> {
-  const db = await obtenerBaseDatos();
+  try {
+    const db = await obtenerBaseDatos();
 
-  const filas = await db.getAllAsync<{
-    datos: string;
-  }>(
-    `
-      SELECT datos
-      FROM comercios_cache
-      ORDER BY actualizado_en DESC
-    `,
-  );
+    const filas = await db.getAllAsync<{ datos: string }>(
+      `
+        SELECT datos
+        FROM comercios_cache
+        ORDER BY actualizado_en DESC
+      `,
+    );
 
-  return filas.map((fila) => JSON.parse(fila.datos) as Comercio);
+    return filas.map((fila) => JSON.parse(fila.datos) as Comercio);
+  } catch {
+    return [];
+  }
 }
 
 export async function guardarPromocionesCache(
@@ -74,9 +76,7 @@ export async function guardarPromocionesCache(
 export async function obtenerPromocionesCache(): Promise<Promocion[]> {
   const db = await obtenerBaseDatos();
 
-  const filas = await db.getAllAsync<{
-    datos: string;
-  }>(
+  const filas = await db.getAllAsync<{ datos: string }>(
     `
       SELECT datos
       FROM promociones_cache
