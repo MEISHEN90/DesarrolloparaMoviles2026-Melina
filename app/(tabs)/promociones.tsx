@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -11,6 +12,14 @@ import {
 import { useEstadoRed } from "../../src/hooks/use-estado-red";
 import { obtenerPromociones } from "../../src/servicios/promociones";
 import { Promocion } from "../../src/tipos/modelos";
+
+function formatearFecha(fecha: string): string {
+  return new Date(fecha).toLocaleDateString("es-AR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
 
 export default function PromocionesScreen() {
   const [promociones, setPromociones] = useState<Promocion[]>([]);
@@ -44,7 +53,6 @@ export default function PromocionesScreen() {
     return (
       <View style={styles.estadoContainer}>
         <ActivityIndicator size="large" />
-
         <Text style={styles.estadoTexto}>Cargando promociones...</Text>
       </View>
     );
@@ -59,7 +67,11 @@ export default function PromocionesScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.scroll}
+      contentContainerStyle={styles.container}
+      showsVerticalScrollIndicator={false}
+    >
       <Text style={styles.title}>Promociones</Text>
 
       <Text style={styles.subtitle}>
@@ -75,7 +87,7 @@ export default function PromocionesScreen() {
       )}
 
       {promociones.length === 0 ? (
-        <View style={styles.estadoContainer}>
+        <View style={styles.estadoVacio}>
           <Text style={styles.estadoTexto}>
             No hay promociones disponibles.
           </Text>
@@ -104,7 +116,7 @@ export default function PromocionesScreen() {
               )}
 
               <Text style={styles.vigencia}>
-                Vigente hasta: {promocion.hasta}
+                Vigente hasta: {formatearFecha(promocion.hasta)}
               </Text>
 
               <Text style={styles.linkText}>Ver promoción</Text>
@@ -112,14 +124,18 @@ export default function PromocionesScreen() {
           </Link>
         ))
       )}
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  scroll: {
     flex: 1,
+  },
+
+  container: {
     padding: 20,
+    paddingBottom: 32,
     gap: 16,
   },
 
@@ -180,6 +196,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 24,
     gap: 12,
+  },
+
+  estadoVacio: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 40,
   },
 
   estadoTexto: {
