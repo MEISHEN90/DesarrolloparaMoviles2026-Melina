@@ -1,44 +1,7 @@
 import { pedir } from "./api";
 import { Comercio } from "../tipos/modelos";
-import { estaAbiertoAhora } from "../utils/horarios";
+import { filtrarComercios } from "../utils/comercios";
 import { guardarComerciosCache, obtenerComerciosCache } from "./cache";
-
-function normalizarTexto(texto: string): string {
-  return texto
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim();
-}
-
-function filtrarComercios(
-  comercios: Comercio[],
-  texto: string,
-  rubroId: string | null,
-  soloAbiertos: boolean,
-): Comercio[] {
-  const termino = normalizarTexto(texto);
-
-  return comercios.filter((comercio) => {
-    if (!comercio.activo) {
-      return false;
-    }
-
-    const coincideRubro = rubroId === null || comercio.rubroId === rubroId;
-    const nombreNormalizado = normalizarTexto(comercio.nombre);
-    const descripcionNormalizada = normalizarTexto(comercio.descripcion);
-
-    const coincideTexto =
-      termino.length === 0 ||
-      nombreNormalizado.includes(termino) ||
-      descripcionNormalizada.includes(termino);
-
-    const coincideAbierto =
-      !soloAbiertos || estaAbiertoAhora(comercio.horarios);
-
-    return coincideRubro && coincideTexto && coincideAbierto;
-  });
-}
 
 async function obtenerFuenteComercios(): Promise<Comercio[]> {
   try {
