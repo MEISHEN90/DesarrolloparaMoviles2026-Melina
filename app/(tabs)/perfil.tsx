@@ -194,6 +194,15 @@ export default function PerfilScreen() {
           </Text>
 
           <Pressable
+            onPress={() => router.push("/mi-comercio")}
+            style={styles.boton}
+            accessibilityRole="button"
+            accessibilityLabel="Editar datos del comercio"
+          >
+            <Text style={styles.botonTexto}>Editar datos del comercio</Text>
+          </Pressable>
+
+          <Pressable
             onPress={() => router.push("/escanear-qr")}
             style={styles.boton}
             accessibilityRole="button"
