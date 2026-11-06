@@ -79,6 +79,7 @@ export default function RootLayout() {
         <Stack.Screen name="login" options={{ title: "Iniciar sesión" }} />
         <Stack.Screen name="registro" options={{ title: "Crear cuenta" }} />
         <Stack.Screen name="escanear-qr" options={{ title: "Escanear QR" }} />
+        <Stack.Screen name="mi-comercio" options={{ title: "Mi comercio" }} />
         <Stack.Screen
           name="imagen-comercio"
           options={{ title: "Imagen del comercio" }}
