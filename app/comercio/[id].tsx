@@ -119,17 +119,7 @@ export default function ComercioDetalleScreen() {
         setRubro(rubroDatos);
         setFavorito(favoritoActual);
 
-        const hoy = new Date();
-
-        const vigente =
-          promociones.find((promocion) => {
-            const desde = new Date(`${promocion.desde}T00:00:00`);
-            const hasta = new Date(`${promocion.hasta}T23:59:59`);
-
-            return hoy >= desde && hoy <= hasta;
-          }) ?? null;
-
-        setPromocionVigente(vigente);
+        setPromocionVigente(promociones[0] ?? null);
 
         const resenasConAutor = await Promise.all(
           resenasDatos.map(async (resena) => {
@@ -326,7 +316,7 @@ export default function ComercioDetalleScreen() {
             <Text style={styles.text}>{promocionVigente.detalle}</Text>
 
             <Text style={styles.promocionVigencia}>
-              Vigente hasta {promocionVigente.hasta}
+              Vigente hasta {formatearFecha(promocionVigente.hasta)}
             </Text>
           </View>
         ) : null}
