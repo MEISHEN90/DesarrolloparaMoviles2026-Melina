@@ -13,6 +13,7 @@ import {
   View,
 } from "react-native";
 
+import { useTema } from "../../src/contexto/tema";
 import {
   obtenerUsuarioActual,
   obtenerUsuarioPorId,
@@ -24,23 +25,6 @@ import { obtenerResenasPorComercio } from "../../src/servicios/resenas";
 import { obtenerRubroPorId } from "../../src/servicios/rubros";
 import { Comercio, Promocion, Resena, Rubro } from "../../src/tipos/modelos";
 import { estaAbiertoAhora } from "../../src/utils/horarios";
-
-const COLORES = {
-  primario: "#2457A6",
-  primarioOscuro: "#173A70",
-  fondo: "#F5F7FA",
-  tarjeta: "#FFFFFF",
-  borde: "#D9DEE7",
-  texto: "#1B1D21",
-  secundario: "#667085",
-  abierto: "#2E7D32",
-  abiertoFondo: "#EAF7EE",
-  cerrado: "#B42318",
-  cerradoFondo: "#FDECEC",
-  promo: "#B54708",
-  promoFondo: "#FFF4E5",
-  estrellas: "#B7791F",
-};
 
 const nombresDias = [
   "Domingo",
@@ -58,6 +42,8 @@ interface ResenaConAutor {
 }
 
 function VideoComercio({ videoUrl }: { videoUrl: string }) {
+  const { colores } = useTema();
+  const styles = useMemo(() => crearEstilos(colores), [colores]);
   const player = useVideoPlayer(videoUrl, (instancia) => {
     instancia.loop = false;
   });
@@ -66,7 +52,7 @@ function VideoComercio({ videoUrl }: { videoUrl: string }) {
     <View style={styles.tarjetaSeccion}>
       <View style={styles.seccionEncabezado}>
         <View style={styles.seccionIcono}>
-          <Ionicons name="videocam-outline" size={18} color={COLORES.primario} />
+          <Ionicons name="videocam-outline" size={18} color={colores.primario} />
         </View>
         <Text style={styles.seccionTitulo}>Video de presentación</Text>
       </View>
@@ -83,18 +69,21 @@ function VideoComercio({ videoUrl }: { videoUrl: string }) {
 }
 
 function GaleriaComercio({ imagenes }: { imagenes: string[] }) {
+  const { colores } = useTema();
+  const styles = useMemo(() => crearEstilos(colores), [colores]);
+
   return (
     <View style={styles.tarjetaSeccion}>
       <View style={styles.seccionEncabezado}>
         <View style={styles.seccionIcono}>
-          <Ionicons name="images-outline" size={18} color={COLORES.primario} />
+          <Ionicons name="images-outline" size={18} color={colores.primario} />
         </View>
         <Text style={styles.seccionTitulo}>Fotos</Text>
       </View>
 
       {imagenes.length === 0 ? (
         <View style={styles.fotosVacias}>
-          <Ionicons name="images-outline" size={28} color={COLORES.secundario} />
+          <Ionicons name="images-outline" size={28} color={colores.secundario} />
           <Text style={styles.estadoTexto}>
             Este comercio todavía no publicó fotos.
           </Text>
@@ -122,6 +111,8 @@ function GaleriaComercio({ imagenes }: { imagenes: string[] }) {
 }
 
 function Estrellas({ cantidad }: { cantidad: number }) {
+  const { colores } = useTema();
+
   return (
     <View style={styles.estrellasFila}>
       {[1, 2, 3, 4, 5].map((estrella) => (
@@ -129,7 +120,7 @@ function Estrellas({ cantidad }: { cantidad: number }) {
           key={estrella}
           name={estrella <= cantidad ? "star" : "star-outline"}
           size={15}
-          color={COLORES.estrellas}
+          color={colores.estrellas}
         />
       ))}
     </View>
@@ -145,6 +136,8 @@ function formatearFecha(fecha: string): string {
 }
 
 export default function ComercioDetalleScreen() {
+  const { colores } = useTema();
+  const styles = useMemo(() => crearEstilos(colores), [colores]);
   const { id } = useLocalSearchParams<{ id: string }>();
 
   const [comercio, setComercio] = useState<Comercio | null>(null);
@@ -263,7 +256,7 @@ export default function ComercioDetalleScreen() {
   if (cargando) {
     return (
       <View style={styles.estadoContainer}>
-        <ActivityIndicator size="large" color={COLORES.primario} />
+        <ActivityIndicator size="large" color={colores.primario} />
         <Text style={styles.estadoTitulo}>Cargando comercio</Text>
         <Text style={styles.estadoTexto}>
           Estamos preparando la información del local.
@@ -276,7 +269,7 @@ export default function ComercioDetalleScreen() {
     return (
       <View style={styles.estadoContainer}>
         <View style={styles.estadoIconoError}>
-          <Ionicons name="alert-circle-outline" size={32} color={COLORES.cerrado} />
+          <Ionicons name="alert-circle-outline" size={32} color={colores.cerrado} />
         </View>
         <Text style={styles.estadoTitulo}>No pudimos cargar el comercio</Text>
         <Text style={styles.estadoTexto}>{error}</Text>
@@ -288,7 +281,7 @@ export default function ComercioDetalleScreen() {
     return (
       <View style={styles.estadoContainer}>
         <View style={styles.estadoIcono}>
-          <Ionicons name="storefront-outline" size={30} color={COLORES.primario} />
+          <Ionicons name="storefront-outline" size={30} color={colores.primario} />
         </View>
         <Text style={styles.estadoTitulo}>Comercio no encontrado</Text>
         <Text style={styles.estadoTexto}>
@@ -330,7 +323,7 @@ export default function ComercioDetalleScreen() {
                 <Ionicons
                   name={favorito ? "heart" : "heart-outline"}
                   size={24}
-                  color={favorito ? "#C62828" : COLORES.primario}
+                  color={favorito ? colores.peligro : colores.primario}
                 />
               </Pressable>
             ) : null}
@@ -360,7 +353,7 @@ export default function ComercioDetalleScreen() {
             </View>
 
             <View style={styles.valoracionFila}>
-              <Ionicons name="star" size={16} color={COLORES.estrellas} />
+              <Ionicons name="star" size={16} color={colores.estrellas} />
               <Text style={styles.valoracion}>
                 {comercio.puntaje.toFixed(1)} · {comercio.cantidadResenas} reseñas
               </Text>
@@ -394,7 +387,7 @@ export default function ComercioDetalleScreen() {
               accessibilityRole="button"
               accessibilityLabel="Llamar al comercio"
             >
-              <Ionicons name="call-outline" size={20} color={COLORES.primario} />
+              <Ionicons name="call-outline" size={20} color={colores.primario} />
               <Text style={styles.accionSecundariaTexto}>Llamar</Text>
             </Pressable>
 
@@ -407,7 +400,7 @@ export default function ComercioDetalleScreen() {
               <Ionicons
                 name="navigate-outline"
                 size={20}
-                color={COLORES.primario}
+                color={colores.primario}
               />
               <Text style={styles.accionSecundariaTexto}>Cómo llegar</Text>
             </Pressable>
@@ -417,7 +410,7 @@ export default function ComercioDetalleScreen() {
             <Ionicons
               name="location-outline"
               size={18}
-              color={COLORES.secundario}
+              color={colores.secundario}
             />
             <Text style={styles.ubicacionTexto}>{comercio.direccion}</Text>
           </View>
@@ -429,7 +422,7 @@ export default function ComercioDetalleScreen() {
               accessibilityRole="link"
               accessibilityLabel={`Abrir Instagram ${comercio.instagram}`}
             >
-              <Ionicons name="logo-instagram" size={18} color={COLORES.primario} />
+              <Ionicons name="logo-instagram" size={18} color={colores.primario} />
               <Text style={styles.enlace}>{comercio.instagram}</Text>
             </Pressable>
           ) : null}
@@ -442,7 +435,7 @@ export default function ComercioDetalleScreen() {
             <View style={styles.promocionEncabezado}>
               <View style={styles.promocionTituloFila}>
                 <View style={styles.promoIcono}>
-                  <Ionicons name="pricetag-outline" size={18} color={COLORES.promo} />
+                  <Ionicons name="pricetag-outline" size={18} color={colores.promo} />
                 </View>
                 <Text style={styles.seccionTitulo}>Promoción vigente</Text>
               </View>
@@ -460,7 +453,7 @@ export default function ComercioDetalleScreen() {
             <Text style={styles.text}>{promocionVigente.detalle}</Text>
 
             <View style={styles.promocionPie}>
-              <Ionicons name="calendar-outline" size={15} color={COLORES.promo} />
+              <Ionicons name="calendar-outline" size={15} color={colores.promo} />
               <Text style={styles.promocionVigencia}>
                 Vigente hasta {formatearFecha(promocionVigente.hasta)}
               </Text>
@@ -474,7 +467,7 @@ export default function ComercioDetalleScreen() {
               <Ionicons
                 name="information-circle-outline"
                 size={18}
-                color={COLORES.primario}
+                color={colores.primario}
               />
             </View>
             <Text style={styles.seccionTitulo}>Sobre el comercio</Text>
@@ -489,7 +482,7 @@ export default function ComercioDetalleScreen() {
         <View style={styles.tarjetaSeccion}>
           <View style={styles.seccionEncabezado}>
             <View style={styles.seccionIcono}>
-              <Ionicons name="time-outline" size={18} color={COLORES.primario} />
+              <Ionicons name="time-outline" size={18} color={colores.primario} />
             </View>
             <Text style={styles.seccionTitulo}>Horarios</Text>
           </View>
@@ -516,7 +509,7 @@ export default function ComercioDetalleScreen() {
         <View style={styles.tarjetaSeccion}>
           <View style={styles.seccionEncabezado}>
             <View style={styles.seccionIcono}>
-              <Ionicons name="card-outline" size={18} color={COLORES.primario} />
+              <Ionicons name="card-outline" size={18} color={colores.primario} />
             </View>
             <Text style={styles.seccionTitulo}>Medios de pago</Text>
           </View>
@@ -536,7 +529,7 @@ export default function ComercioDetalleScreen() {
               <Ionicons
                 name="chatbubble-ellipses-outline"
                 size={18}
-                color={COLORES.primario}
+                color={colores.primario}
               />
             </View>
             <Text style={styles.seccionTitulo}>Reseñas</Text>
@@ -547,7 +540,7 @@ export default function ComercioDetalleScreen() {
               <Ionicons
                 name="chatbubble-outline"
                 size={26}
-                color={COLORES.secundario}
+                color={colores.secundario}
               />
               <Text style={styles.estadoTexto}>
                 Este comercio todavía no tiene reseñas disponibles.
@@ -563,7 +556,7 @@ export default function ComercioDetalleScreen() {
                         <Ionicons
                           name="person-outline"
                           size={18}
-                          color={COLORES.primario}
+                          color={colores.primario}
                         />
                       </View>
 
@@ -586,7 +579,7 @@ export default function ComercioDetalleScreen() {
                         <Ionicons
                           name="storefront-outline"
                           size={17}
-                          color={COLORES.primario}
+                          color={colores.primario}
                         />
                         <Text style={styles.respuestaTitulo}>
                           Respuesta del comercio
@@ -605,10 +598,11 @@ export default function ComercioDetalleScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function crearEstilos(colores: ReturnType<typeof useTema>["colores"]) {
+  return StyleSheet.create({
   scroll: {
     flex: 1,
-    backgroundColor: COLORES.fondo,
+    backgroundColor: colores.fondo,
   },
   container: {
     padding: 18,
@@ -616,9 +610,9 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   hero: {
-    backgroundColor: COLORES.tarjeta,
+    backgroundColor: colores.tarjeta,
     borderWidth: 1,
-    borderColor: COLORES.borde,
+    borderColor: colores.borde,
     borderRadius: 18,
     padding: 18,
     gap: 10,
@@ -635,19 +629,19 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 27,
     fontWeight: "800",
-    color: COLORES.texto,
+    color: colores.texto,
     letterSpacing: -0.4,
   },
   rubro: {
     fontSize: 14,
-    color: COLORES.secundario,
+    color: colores.secundario,
     marginTop: 4,
   },
   favoritoBoton: {
     width: 42,
     height: 42,
     borderRadius: 21,
-    backgroundColor: "#EEF3FA",
+    backgroundColor: colores.comercioFondo,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -666,10 +660,10 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   estadoAbierto: {
-    backgroundColor: COLORES.abiertoFondo,
+    backgroundColor: colores.abiertoFondo,
   },
   estadoCerrado: {
-    backgroundColor: COLORES.cerradoFondo,
+    backgroundColor: colores.cerradoFondo,
   },
   estadoPunto: {
     width: 7,
@@ -677,20 +671,20 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   estadoPuntoAbierto: {
-    backgroundColor: COLORES.abierto,
+    backgroundColor: colores.abierto,
   },
   estadoPuntoCerrado: {
-    backgroundColor: COLORES.cerrado,
+    backgroundColor: colores.cerrado,
   },
   estadoChipTexto: {
     fontSize: 12,
     fontWeight: "700",
   },
   estadoTextoAbierto: {
-    color: COLORES.abierto,
+    color: colores.abierto,
   },
   estadoTextoCerrado: {
-    color: COLORES.cerrado,
+    color: colores.cerrado,
   },
   valoracionFila: {
     flexDirection: "row",
@@ -699,12 +693,12 @@ const styles = StyleSheet.create({
   },
   valoracion: {
     fontSize: 13,
-    color: COLORES.secundario,
+    color: colores.secundario,
   },
   tarjetaSeccion: {
-    backgroundColor: COLORES.tarjeta,
+    backgroundColor: colores.tarjeta,
     borderWidth: 1,
-    borderColor: COLORES.borde,
+    borderColor: colores.borde,
     borderRadius: 18,
     padding: 16,
     gap: 12,
@@ -718,24 +712,24 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 10,
-    backgroundColor: "#EAF0F8",
+    backgroundColor: colores.comercioFondo,
     alignItems: "center",
     justifyContent: "center",
   },
   seccionTitulo: {
     fontSize: 18,
     fontWeight: "800",
-    color: COLORES.texto,
+    color: colores.texto,
   },
   descripcion: {
     fontSize: 15,
     lineHeight: 22,
-    color: "#475467",
+    color: colores.secundario,
   },
   text: {
     fontSize: 14,
     lineHeight: 20,
-    color: "#475467",
+    color: colores.secundario,
   },
   acciones: {
     flexDirection: "row",
@@ -745,7 +739,7 @@ const styles = StyleSheet.create({
     flex: 1,
     minHeight: 50,
     borderRadius: 13,
-    backgroundColor: COLORES.primario,
+    backgroundColor: colores.primario,
     alignItems: "center",
     justifyContent: "center",
     gap: 4,
@@ -760,13 +754,13 @@ const styles = StyleSheet.create({
     minHeight: 50,
     borderRadius: 13,
     borderWidth: 1,
-    borderColor: COLORES.primario,
+    borderColor: colores.primario,
     alignItems: "center",
     justifyContent: "center",
     gap: 4,
   },
   accionSecundariaTexto: {
-    color: COLORES.primario,
+    color: colores.primario,
     fontSize: 12,
     fontWeight: "700",
   },
@@ -782,7 +776,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     lineHeight: 20,
-    color: COLORES.secundario,
+    color: colores.secundario,
   },
   instagramFila: {
     flexDirection: "row",
@@ -791,7 +785,7 @@ const styles = StyleSheet.create({
   },
   enlace: {
     fontSize: 14,
-    color: COLORES.primario,
+    color: colores.primario,
     fontWeight: "600",
   },
   galeriaContenido: {
@@ -802,12 +796,12 @@ const styles = StyleSheet.create({
     width: 275,
     height: 190,
     borderRadius: 14,
-    backgroundColor: "#EAEAEA",
+    backgroundColor: colores.superficie,
   },
   fotosVacias: {
     minHeight: 105,
     borderRadius: 14,
-    backgroundColor: "#F8FAFC",
+    backgroundColor: colores.superficie,
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
@@ -821,9 +815,9 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   promocionCard: {
-    backgroundColor: COLORES.promoFondo,
+    backgroundColor: colores.promoFondo,
     borderWidth: 1,
-    borderColor: "#F7C98B",
+    borderColor: colores.promo,
     borderRadius: 18,
     padding: 16,
     gap: 9,
@@ -844,17 +838,17 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 10,
-    backgroundColor: "#FFE5C2",
+    backgroundColor: colores.promoFondo,
     alignItems: "center",
     justifyContent: "center",
   },
   promocionTitulo: {
     fontSize: 17,
     fontWeight: "800",
-    color: COLORES.texto,
+    color: colores.texto,
   },
   descuentoChip: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: colores.tarjeta,
     borderRadius: 999,
     paddingHorizontal: 10,
     paddingVertical: 5,
@@ -862,7 +856,7 @@ const styles = StyleSheet.create({
   descuentoTexto: {
     fontSize: 12,
     fontWeight: "800",
-    color: COLORES.promo,
+    color: colores.promo,
   },
   promocionPie: {
     flexDirection: "row",
@@ -872,7 +866,7 @@ const styles = StyleSheet.create({
   promocionVigencia: {
     fontSize: 12,
     fontWeight: "600",
-    color: COLORES.promo,
+    color: colores.promo,
   },
   horarioFila: {
     flexDirection: "row",
@@ -880,13 +874,13 @@ const styles = StyleSheet.create({
     gap: 16,
     paddingVertical: 8,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#E6E9EF",
+    borderBottomColor: colores.borde,
   },
   horarioDia: {
     flex: 1,
     fontSize: 14,
     fontWeight: "700",
-    color: COLORES.texto,
+    color: colores.texto,
   },
   horarioFranjas: {
     flex: 1,
@@ -895,7 +889,7 @@ const styles = StyleSheet.create({
   },
   horarioHora: {
     fontSize: 14,
-    color: "#475467",
+    color: colores.secundario,
     textAlign: "right",
   },
   chipsContainer: {
@@ -904,7 +898,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   chip: {
-    backgroundColor: "#EEF3FA",
+    backgroundColor: colores.comercioFondo,
     borderRadius: 999,
     paddingHorizontal: 11,
     paddingVertical: 7,
@@ -912,7 +906,7 @@ const styles = StyleSheet.create({
   chipTexto: {
     fontSize: 13,
     fontWeight: "600",
-    color: COLORES.primarioOscuro,
+    color: colores.primarioOscuro,
     textTransform: "capitalize",
   },
   resenaVacia: {
@@ -927,7 +921,7 @@ const styles = StyleSheet.create({
   resenaCard: {
     gap: 10,
     padding: 14,
-    backgroundColor: "#FAFBFC",
+    backgroundColor: colores.superficie,
     borderRadius: 14,
   },
   resenaEncabezado: {
@@ -949,18 +943,18 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: "#EAF0F8",
+    backgroundColor: colores.comercioFondo,
     alignItems: "center",
     justifyContent: "center",
   },
   resenaAutor: {
     fontSize: 14,
     fontWeight: "700",
-    color: COLORES.texto,
+    color: colores.texto,
   },
   resenaFecha: {
     fontSize: 12,
-    color: COLORES.secundario,
+    color: colores.secundario,
     marginTop: 2,
   },
   estrellasFila: {
@@ -970,13 +964,13 @@ const styles = StyleSheet.create({
   resenaComentario: {
     fontSize: 14,
     lineHeight: 20,
-    color: "#475467",
+    color: colores.secundario,
   },
   respuestaComercio: {
     gap: 6,
     padding: 11,
     borderRadius: 10,
-    backgroundColor: "#EEF3FA",
+    backgroundColor: colores.comercioFondo,
   },
   respuestaTituloFila: {
     flexDirection: "row",
@@ -986,16 +980,16 @@ const styles = StyleSheet.create({
   respuestaTitulo: {
     fontSize: 13,
     fontWeight: "700",
-    color: COLORES.primarioOscuro,
+    color: colores.primarioOscuro,
   },
   respuestaTexto: {
     fontSize: 13,
     lineHeight: 19,
-    color: "#475467",
+    color: colores.secundario,
   },
   estadoContainer: {
     flex: 1,
-    backgroundColor: COLORES.fondo,
+    backgroundColor: colores.fondo,
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 28,
@@ -1004,7 +998,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: "#EAF0F8",
+    backgroundColor: colores.comercioFondo,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 12,
@@ -1013,7 +1007,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: COLORES.cerradoFondo,
+    backgroundColor: colores.cerradoFondo,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 12,
@@ -1021,15 +1015,16 @@ const styles = StyleSheet.create({
   estadoTitulo: {
     fontSize: 19,
     fontWeight: "800",
-    color: COLORES.texto,
+    color: colores.texto,
     textAlign: "center",
     marginTop: 8,
   },
   estadoTexto: {
     fontSize: 14,
     lineHeight: 20,
-    color: COLORES.secundario,
+    color: colores.secundario,
     textAlign: "center",
     marginTop: 4,
   },
-});
+  });
+}
