@@ -2,6 +2,9 @@ import Storage from "expo-sqlite/kv-store";
 
 const CLAVE_SOLO_ABIERTOS = "preferencia-solo-abiertos";
 const CLAVE_RUBRO = "preferencia-rubro-seleccionado";
+const CLAVE_TEMA = "preferencia-tema";
+
+export type PreferenciaTema = "system" | "light" | "dark";
 
 export async function guardarPreferenciaSoloAbiertos(
   valor: boolean,
@@ -37,4 +40,21 @@ export async function obtenerRubroSeleccionado(): Promise<string | null> {
 export async function limpiarPreferenciasComercios(): Promise<void> {
   await Storage.removeItem(CLAVE_SOLO_ABIERTOS);
   await Storage.removeItem(CLAVE_RUBRO);
+}
+
+
+export async function guardarPreferenciaTema(
+  tema: PreferenciaTema,
+): Promise<void> {
+  await Storage.setItem(CLAVE_TEMA, tema);
+}
+
+export async function obtenerPreferenciaTema(): Promise<PreferenciaTema> {
+  const valor = await Storage.getItem(CLAVE_TEMA);
+
+  if (valor === "light" || valor === "dark" || valor === "system") {
+    return valor;
+  }
+
+  return "system";
 }
