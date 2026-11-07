@@ -1,19 +1,23 @@
+import { Ionicons } from "@expo/vector-icons";
 import { router, Stack } from "expo-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
-  View,
 } from "react-native";
 
+import { useTema } from "../src/contexto/tema";
 import { registrarUsuario } from "../src/servicios/autenticacion";
 import { guardarSesion } from "../src/servicios/sesion";
 import { validarRegistro } from "../src/utils/autenticacion";
 
 export default function RegistroScreen() {
+  const { colores } = useTema();
+  const styles = useMemo(() => crearEstilos(colores), [colores]);
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -57,7 +61,13 @@ export default function RegistroScreen() {
     <>
       <Stack.Screen options={{ title: "Crear cuenta" }} />
 
-      <View style={styles.container}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled"
+      >
+        <Ionicons name="person-add-outline" size={34} color={colores.primario} />
+
         <Text style={styles.title}>Crear cuenta</Text>
 
         <Text style={styles.subtitle}>
@@ -69,6 +79,7 @@ export default function RegistroScreen() {
           value={nombre}
           onChangeText={setNombre}
           placeholder="Nombre y apellido"
+          placeholderTextColor={colores.secundario}
           autoCapitalize="words"
           style={styles.input}
           accessibilityLabel="Nombre"
@@ -79,6 +90,7 @@ export default function RegistroScreen() {
           value={email}
           onChangeText={setEmail}
           placeholder="correo@ejemplo.com"
+          placeholderTextColor={colores.secundario}
           keyboardType="email-address"
           autoCapitalize="none"
           autoCorrect={false}
@@ -91,6 +103,7 @@ export default function RegistroScreen() {
           value={password}
           onChangeText={setPassword}
           placeholder="Mínimo 8 caracteres"
+          placeholderTextColor={colores.secundario}
           secureTextEntry
           autoCapitalize="none"
           style={styles.input}
@@ -102,13 +115,14 @@ export default function RegistroScreen() {
           value={confirmarPassword}
           onChangeText={setConfirmarPassword}
           placeholder="Repetir contraseña"
+          placeholderTextColor={colores.secundario}
           secureTextEntry
           autoCapitalize="none"
           style={styles.input}
           accessibilityLabel="Confirmar contraseña"
         />
 
-        {error && <Text style={styles.error}>{error}</Text>}
+        {error ? <Text style={styles.error}>{error}</Text> : null}
 
         <Pressable
           onPress={manejarRegistro}
@@ -118,7 +132,7 @@ export default function RegistroScreen() {
           accessibilityLabel="Crear cuenta"
         >
           {cargando ? (
-            <ActivityIndicator />
+            <ActivityIndicator color="#FFFFFF" />
           ) : (
             <Text style={styles.botonTexto}>Crear cuenta</Text>
           )}
@@ -132,21 +146,84 @@ export default function RegistroScreen() {
         >
           <Text style={styles.botonSecundarioTexto}>Ya tengo una cuenta</Text>
         </Pressable>
-      </View>
+      </ScrollView>
     </>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24, gap: 10 },
-  title: { fontSize: 28, fontWeight: "700", marginBottom: 4 },
-  subtitle: { fontSize: 16, marginBottom: 18 },
-  label: { fontSize: 14, fontWeight: "600", marginTop: 8 },
-  input: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16 },
-  error: { marginTop: 8, fontSize: 14, fontWeight: "600" },
-  boton: { marginTop: 16, borderWidth: 1, borderRadius: 10, paddingVertical: 14, alignItems: "center" },
-  botonDeshabilitado: { opacity: 0.6 },
-  botonTexto: { fontSize: 16, fontWeight: "700" },
-  botonSecundario: { marginTop: 4, paddingVertical: 12, alignItems: "center" },
-  botonSecundarioTexto: { fontSize: 15, fontWeight: "600" },
-});
+function crearEstilos(colores: ReturnType<typeof useTema>["colores"]) {
+  return StyleSheet.create({
+    scroll: {
+      flex: 1,
+      backgroundColor: colores.fondo,
+    },
+    container: {
+      padding: 24,
+      paddingBottom: 36,
+    },
+    title: {
+      fontSize: 28,
+      fontWeight: "800",
+      color: colores.texto,
+      marginTop: 14,
+      marginBottom: 5,
+    },
+    subtitle: {
+      fontSize: 16,
+      lineHeight: 22,
+      color: colores.secundario,
+      marginBottom: 18,
+    },
+    label: {
+      fontSize: 14,
+      fontWeight: "700",
+      color: colores.texto,
+      marginTop: 10,
+      marginBottom: 7,
+    },
+    input: {
+      minHeight: 48,
+      borderWidth: 1,
+      borderColor: colores.borde,
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      fontSize: 16,
+      color: colores.texto,
+      backgroundColor: colores.tarjeta,
+    },
+    error: {
+      marginTop: 10,
+      fontSize: 14,
+      fontWeight: "600",
+      color: colores.peligro,
+    },
+    boton: {
+      marginTop: 20,
+      minHeight: 48,
+      borderRadius: 12,
+      backgroundColor: colores.primario,
+      paddingVertical: 14,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    botonDeshabilitado: {
+      opacity: 0.6,
+    },
+    botonTexto: {
+      color: "#FFFFFF",
+      fontSize: 16,
+      fontWeight: "700",
+    },
+    botonSecundario: {
+      marginTop: 6,
+      paddingVertical: 12,
+      alignItems: "center",
+    },
+    botonSecundarioTexto: {
+      color: colores.primario,
+      fontSize: 15,
+      fontWeight: "700",
+    },
+  });
+}
