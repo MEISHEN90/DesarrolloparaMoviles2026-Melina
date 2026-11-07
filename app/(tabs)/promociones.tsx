@@ -1,5 +1,6 @@
+import { Ionicons } from "@expo/vector-icons";
 import { Link } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -9,6 +10,7 @@ import {
   View,
 } from "react-native";
 
+import { useTema } from "../../src/contexto/tema";
 import { useEstadoRed } from "../../src/hooks/use-estado-red";
 import { obtenerPromociones } from "../../src/servicios/promociones";
 import { Promocion } from "../../src/tipos/modelos";
@@ -22,12 +24,13 @@ function formatearFecha(fecha: string): string {
 }
 
 export default function PromocionesScreen() {
+  const { colores } = useTema();
+  const styles = useMemo(() => crearEstilos(colores), [colores]);
   const [promociones, setPromociones] = useState<Promocion[]>([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const estadoRed = useEstadoRed();
-
   const sinConexion = !estadoRed.conectado || !estadoRed.tieneInternet;
 
   useEffect(() => {
@@ -35,9 +38,7 @@ export default function PromocionesScreen() {
       try {
         setCargando(true);
         setError(null);
-
         const datos = await obtenerPromociones();
-
         setPromociones(datos);
       } catch {
         setError("No fue posible cargar las promociones.");
@@ -46,14 +47,15 @@ export default function PromocionesScreen() {
       }
     }
 
-    cargarPromociones();
+    void cargarPromociones();
   }, [estadoRed.conectado, estadoRed.tieneInternet]);
 
   if (cargando) {
     return (
       <View style={styles.estadoContainer}>
-        <ActivityIndicator size="large" />
-        <Text style={styles.estadoTexto}>Cargando promociones...</Text>
+        <ActivityIndicator size="large" color={colores.primario} />
+        <Text style={styles.estadoTitulo}>Cargando promociones</Text>
+        <Text style={styles.estadoTexto}>Buscando beneficios disponibles.</Text>
       </View>
     );
   }
@@ -61,6 +63,8 @@ export default function PromocionesScreen() {
   if (error) {
     return (
       <View style={styles.estadoContainer}>
+        <Ionicons name="alert-circle-outline" size={34} color={colores.peligro} />
+        <Text style={styles.estadoTitulo}>No pudimos cargar las promociones</Text>
         <Text style={styles.errorTexto}>{error}</Text>
       </View>
     );
@@ -73,53 +77,57 @@ export default function PromocionesScreen() {
       showsVerticalScrollIndicator={false}
     >
       <Text style={styles.title}>Promociones</Text>
-
       <Text style={styles.subtitle}>
         Consultá las promociones disponibles en los comercios.
       </Text>
 
-      {sinConexion && (
+      {sinConexion ? (
         <View style={styles.avisoSinConexion}>
+          <Ionicons name="cloud-offline-outline" size={20} color={colores.promo} />
           <Text style={styles.avisoSinConexionTexto}>
             Sin conexión. Se mostrarán las promociones disponibles localmente.
           </Text>
         </View>
-      )}
+      ) : null}
 
       {promociones.length === 0 ? (
         <View style={styles.estadoVacio}>
-          <Text style={styles.estadoTexto}>
-            No hay promociones disponibles.
-          </Text>
+          <Ionicons name="pricetag-outline" size={32} color={colores.secundario} />
+          <Text style={styles.estadoTitulo}>No hay promociones disponibles</Text>
+          <Text style={styles.estadoTexto}>Volvé a consultar más tarde.</Text>
         </View>
       ) : (
         promociones.map((promocion) => (
           <Link
             key={promocion.id}
-            href={{
-              pathname: "/promocion/[id]",
-              params: {
-                id: promocion.id,
-              },
-            }}
+            href={{ pathname: "/promocion/[id]", params: { id: promocion.id } }}
             asChild
           >
             <Pressable style={styles.card}>
-              <Text style={styles.cardTitle}>{promocion.titulo}</Text>
+              <View style={styles.cardEncabezado}>
+                <View style={styles.cardIcono}>
+                  <Ionicons name="pricetag-outline" size={18} color={colores.promo} />
+                </View>
+                <Text style={styles.cardTitle}>{promocion.titulo}</Text>
+                <Ionicons name="chevron-forward" size={20} color={colores.secundario} />
+              </View>
 
               <Text style={styles.cardText}>{promocion.detalle}</Text>
 
-              {promocion.descuento !== null && (
-                <Text style={styles.descuento}>
-                  {promocion.descuento}% de descuento
+              {promocion.descuento !== null ? (
+                <View style={styles.descuentoChip}>
+                  <Text style={styles.descuento}>
+                    {promocion.descuento}% de descuento
+                  </Text>
+                </View>
+              ) : null}
+
+              <View style={styles.vigenciaFila}>
+                <Ionicons name="calendar-outline" size={15} color={colores.secundario} />
+                <Text style={styles.vigencia}>
+                  Vigente hasta {formatearFecha(promocion.hasta)}
                 </Text>
-              )}
-
-              <Text style={styles.vigencia}>
-                Vigente hasta: {formatearFecha(promocion.hasta)}
-              </Text>
-
-              <Text style={styles.linkText}>Ver promoción</Text>
+              </View>
             </Pressable>
           </Link>
         ))
@@ -128,90 +136,61 @@ export default function PromocionesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  scroll: {
-    flex: 1,
-  },
-
-  container: {
-    padding: 20,
-    paddingBottom: 32,
-    gap: 16,
-  },
-
-  title: {
-    fontSize: 26,
-    fontWeight: "700",
-  },
-
-  subtitle: {
-    fontSize: 16,
-    marginBottom: 4,
-  },
-
-  avisoSinConexion: {
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 12,
-  },
-
-  avisoSinConexionTexto: {
-    fontSize: 14,
-    fontWeight: "600",
-  },
-
-  card: {
-    padding: 18,
-    borderWidth: 1,
-    borderRadius: 12,
-    gap: 6,
-  },
-
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-  },
-
-  cardText: {
-    fontSize: 14,
-  },
-
-  descuento: {
-    fontSize: 15,
-    fontWeight: "700",
-  },
-
-  vigencia: {
-    fontSize: 13,
-  },
-
-  linkText: {
-    marginTop: 8,
-    fontWeight: "600",
-  },
-
-  estadoContainer: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 24,
-    gap: 12,
-  },
-
-  estadoVacio: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 40,
-  },
-
-  estadoTexto: {
-    fontSize: 16,
-    textAlign: "center",
-  },
-
-  errorTexto: {
-    fontSize: 16,
-    textAlign: "center",
-    fontWeight: "600",
-  },
-});
+function crearEstilos(colores: ReturnType<typeof useTema>["colores"]) {
+  return StyleSheet.create({
+    scroll: { flex: 1, backgroundColor: colores.fondo },
+    container: { padding: 18, paddingBottom: 32, gap: 14 },
+    title: { fontSize: 28, fontWeight: "800", color: colores.texto },
+    subtitle: { fontSize: 15, lineHeight: 21, color: colores.secundario, marginBottom: 2 },
+    avisoSinConexion: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 9,
+      backgroundColor: colores.promoFondo,
+      borderRadius: 14,
+      padding: 13,
+    },
+    avisoSinConexionTexto: { flex: 1, fontSize: 13, lineHeight: 18, color: colores.promo, fontWeight: "600" },
+    card: {
+      padding: 16,
+      borderWidth: 1,
+      borderColor: colores.borde,
+      borderRadius: 16,
+      gap: 10,
+      backgroundColor: colores.tarjeta,
+    },
+    cardEncabezado: { flexDirection: "row", alignItems: "center", gap: 9 },
+    cardIcono: {
+      width: 34,
+      height: 34,
+      borderRadius: 10,
+      backgroundColor: colores.promoFondo,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    cardTitle: { flex: 1, fontSize: 17, fontWeight: "800", color: colores.texto },
+    cardText: { fontSize: 14, lineHeight: 20, color: colores.secundario },
+    descuentoChip: {
+      alignSelf: "flex-start",
+      backgroundColor: colores.promoFondo,
+      borderRadius: 999,
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+    },
+    descuento: { fontSize: 13, fontWeight: "800", color: colores.promo },
+    vigenciaFila: { flexDirection: "row", alignItems: "center", gap: 5 },
+    vigencia: { fontSize: 12, color: colores.secundario },
+    estadoContainer: {
+      flex: 1,
+      backgroundColor: colores.fondo,
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 24,
+      gap: 8,
+    },
+    estadoVacio: { alignItems: "center", justifyContent: "center", paddingVertical: 50, gap: 8 },
+    estadoTitulo: { fontSize: 18, fontWeight: "800", color: colores.texto, textAlign: "center" },
+    estadoTexto: { fontSize: 14, lineHeight: 20, color: colores.secundario, textAlign: "center" },
+    errorTexto: { fontSize: 14, lineHeight: 20, color: colores.secundario, textAlign: "center" },
+  });
+}
