@@ -12,6 +12,7 @@ import {
   View,
 } from "react-native";
 
+import { useTema } from "../../src/contexto/tema";
 import { useEstadoRed } from "../../src/hooks/use-estado-red";
 import { buscarComercios } from "../../src/servicios/comercios";
 import {
@@ -24,23 +25,10 @@ import { obtenerRubros } from "../../src/servicios/rubros";
 import { Comercio, Rubro } from "../../src/tipos/modelos";
 import { estaAbiertoAhora } from "../../src/utils/horarios";
 
-const COLORES = {
-  primario: "#2457A6",
-  primarioOscuro: "#173A70",
-  fondo: "#F5F7FA",
-  tarjeta: "#FFFFFF",
-  borde: "#D9DEE7",
-  texto: "#1B1D21",
-  secundario: "#667085",
-  abierto: "#2E7D32",
-  abiertoFondo: "#EAF7EE",
-  cerrado: "#B42318",
-  cerradoFondo: "#FDECEC",
-  aviso: "#8A4B00",
-  avisoFondo: "#FFF4E5",
-};
-
 function EstadoComercio({ abierto }: { abierto: boolean }) {
+  const { colores } = useTema();
+  const styles = useMemo(() => crearEstilos(colores), [colores]);
+
   return (
     <View
       style={[
@@ -67,6 +55,8 @@ function EstadoComercio({ abierto }: { abierto: boolean }) {
 }
 
 export default function ComerciosScreen() {
+  const { colores } = useTema();
+  const styles = useMemo(() => crearEstilos(colores), [colores]);
   const [comercios, setComercios] = useState<Comercio[]>([]);
   const [rubros, setRubros] = useState<Rubro[]>([]);
   const [textoBusqueda, setTextoBusqueda] = useState("");
@@ -181,7 +171,7 @@ export default function ComerciosScreen() {
 
       {sinConexion && (
         <View style={styles.avisoSinConexion}>
-          <Ionicons name="cloud-offline-outline" size={20} color={COLORES.aviso} />
+          <Ionicons name="cloud-offline-outline" size={20} color={colores.aviso} />
           <View style={styles.avisoContenido}>
             <Text style={styles.avisoSinConexionTitulo}>Sin conexión</Text>
             <Text style={styles.avisoSinConexionTexto}>
@@ -192,12 +182,12 @@ export default function ComerciosScreen() {
       )}
 
       <View style={styles.buscador}>
-        <Ionicons name="search-outline" size={20} color={COLORES.secundario} />
+        <Ionicons name="search-outline" size={20} color={colores.secundario} />
         <TextInput
           value={textoBusqueda}
           onChangeText={setTextoBusqueda}
           placeholder="Buscar por nombre o producto"
-          placeholderTextColor="#98A2B3"
+          placeholderTextColor={colores.secundario}
           style={styles.input}
           accessibilityLabel="Buscar comercios"
         />
@@ -208,7 +198,7 @@ export default function ComerciosScreen() {
             accessibilityLabel="Limpiar búsqueda"
             hitSlop={8}
           >
-            <Ionicons name="close-circle" size={20} color={COLORES.secundario} />
+            <Ionicons name="close-circle" size={20} color={colores.secundario} />
           </Pressable>
         ) : null}
       </View>
@@ -271,7 +261,7 @@ export default function ComerciosScreen() {
           <Ionicons
             name={soloAbiertos ? "checkmark-circle" : "time-outline"}
             size={18}
-            color={soloAbiertos ? "#FFFFFF" : COLORES.primario}
+            color={soloAbiertos ? "#FFFFFF" : colores.primario}
           />
           <Text
             style={[
@@ -292,14 +282,14 @@ export default function ComerciosScreen() {
 
       {cargando ? (
         <View style={styles.estadoContainer}>
-          <ActivityIndicator size="large" color={COLORES.primario} />
+          <ActivityIndicator size="large" color={colores.primario} />
           <Text style={styles.estadoTitulo}>Buscando comercios</Text>
           <Text style={styles.estadoTexto}>Esto puede tardar unos segundos.</Text>
         </View>
       ) : error ? (
         <View style={styles.estadoContainer}>
           <View style={styles.estadoIconoError}>
-            <Ionicons name="alert-circle-outline" size={32} color={COLORES.cerrado} />
+            <Ionicons name="alert-circle-outline" size={32} color={colores.cerrado} />
           </View>
           <Text style={styles.estadoTitulo}>No pudimos cargar los comercios</Text>
           <Text style={styles.estadoTexto}>{error}</Text>
@@ -307,7 +297,7 @@ export default function ComerciosScreen() {
       ) : comercios.length === 0 ? (
         <View style={styles.estadoContainer}>
           <View style={styles.estadoIcono}>
-            <Ionicons name="search-outline" size={30} color={COLORES.primario} />
+            <Ionicons name="search-outline" size={30} color={colores.primario} />
           </View>
           <Text style={styles.estadoTitulo}>No encontramos comercios</Text>
           <Text style={styles.estadoTexto}>
@@ -353,7 +343,7 @@ export default function ComerciosScreen() {
                       <Ionicons
                         name="storefront-outline"
                         size={28}
-                        color={COLORES.primario}
+                        color={colores.primario}
                       />
                     </View>
                   )}
@@ -369,7 +359,7 @@ export default function ComerciosScreen() {
                       <Ionicons
                         name="chevron-forward"
                         size={20}
-                        color={COLORES.secundario}
+                        color={colores.secundario}
                       />
                     </View>
 
@@ -381,7 +371,7 @@ export default function ComerciosScreen() {
 
                     <View style={styles.cardMeta}>
                       <View style={styles.metaItem}>
-                        <Ionicons name="star" size={15} color="#B7791F" />
+                        <Ionicons name="star" size={15} color={colores.estrellas} />
                         <Text style={styles.metaTexto}>
                           {comercio.puntaje.toFixed(1)} · {comercio.cantidadResenas} reseñas
                         </Text>
@@ -391,7 +381,7 @@ export default function ComerciosScreen() {
                         <Ionicons
                           name="location-outline"
                           size={15}
-                          color={COLORES.secundario}
+                          color={colores.secundario}
                         />
                         <Text style={styles.direccion} numberOfLines={1}>
                           {comercio.direccion}
@@ -409,10 +399,11 @@ export default function ComerciosScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function crearEstilos(colores: ReturnType<typeof useTema>["colores"]) {
+  return StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORES.fondo,
+    backgroundColor: colores.fondo,
     paddingHorizontal: 18,
     paddingTop: 18,
   },
@@ -422,20 +413,20 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "800",
-    color: COLORES.texto,
+    color: colores.texto,
     letterSpacing: -0.4,
   },
   subtitle: {
     fontSize: 15,
     lineHeight: 21,
-    color: COLORES.secundario,
+    color: colores.secundario,
     marginTop: 5,
   },
   avisoSinConexion: {
     flexDirection: "row",
     alignItems: "flex-start",
     gap: 10,
-    backgroundColor: COLORES.avisoFondo,
+    backgroundColor: colores.avisoFondo,
     borderRadius: 14,
     padding: 13,
     marginBottom: 12,
@@ -446,21 +437,21 @@ const styles = StyleSheet.create({
   avisoSinConexionTitulo: {
     fontSize: 14,
     fontWeight: "700",
-    color: COLORES.aviso,
+    color: colores.aviso,
     marginBottom: 2,
   },
   avisoSinConexionTexto: {
     fontSize: 13,
     lineHeight: 18,
-    color: COLORES.aviso,
+    color: colores.aviso,
   },
   buscador: {
     flexDirection: "row",
     alignItems: "center",
     gap: 9,
-    backgroundColor: COLORES.tarjeta,
+    backgroundColor: colores.tarjeta,
     borderWidth: 1,
-    borderColor: COLORES.borde,
+    borderColor: colores.borde,
     borderRadius: 14,
     paddingHorizontal: 13,
     minHeight: 48,
@@ -469,7 +460,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 16,
-    color: COLORES.texto,
+    color: colores.texto,
     paddingVertical: 10,
   },
   rubrosScroll: {
@@ -486,20 +477,20 @@ const styles = StyleSheet.create({
   chip: {
     minHeight: 36,
     borderWidth: 1,
-    borderColor: COLORES.borde,
-    backgroundColor: COLORES.tarjeta,
+    borderColor: colores.borde,
+    backgroundColor: colores.tarjeta,
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 8,
     justifyContent: "center",
   },
   chipSeleccionado: {
-    backgroundColor: COLORES.primario,
-    borderColor: COLORES.primario,
+    backgroundColor: colores.primario,
+    borderColor: colores.primario,
   },
   chipTexto: {
     fontSize: 14,
-    color: COLORES.texto,
+    color: colores.texto,
   },
   chipTextoSeleccionado: {
     color: "#FFFFFF",
@@ -517,19 +508,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 6,
     borderWidth: 1,
-    borderColor: COLORES.primario,
-    backgroundColor: COLORES.tarjeta,
+    borderColor: colores.primario,
+    backgroundColor: colores.tarjeta,
     borderRadius: 20,
     paddingHorizontal: 13,
     paddingVertical: 8,
   },
   filtroAbiertoSeleccionado: {
-    backgroundColor: COLORES.primario,
+    backgroundColor: colores.primario,
   },
   filtroAbiertoTexto: {
     fontSize: 14,
     fontWeight: "600",
-    color: COLORES.primario,
+    color: colores.primario,
   },
   filtroAbiertoTextoSeleccionado: {
     color: "#FFFFFF",
@@ -537,7 +528,7 @@ const styles = StyleSheet.create({
   limpiarTexto: {
     fontSize: 13,
     fontWeight: "700",
-    color: COLORES.primario,
+    color: colores.primario,
   },
   lista: {
     gap: 12,
@@ -546,15 +537,15 @@ const styles = StyleSheet.create({
   resultadosTexto: {
     fontSize: 13,
     fontWeight: "600",
-    color: COLORES.secundario,
+    color: colores.secundario,
     marginBottom: 2,
   },
   card: {
     flexDirection: "row",
-    backgroundColor: COLORES.tarjeta,
+    backgroundColor: colores.tarjeta,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: COLORES.borde,
+    borderColor: colores.borde,
     padding: 12,
     gap: 12,
   },
@@ -562,13 +553,13 @@ const styles = StyleSheet.create({
     width: 92,
     height: 108,
     borderRadius: 12,
-    backgroundColor: "#E9EEF5",
+    backgroundColor: colores.superficie,
   },
   cardImagenVacia: {
     width: 92,
     height: 108,
     borderRadius: 12,
-    backgroundColor: "#EAF0F8",
+    backgroundColor: colores.comercioFondo,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -588,11 +579,11 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 17,
     fontWeight: "800",
-    color: COLORES.texto,
+    color: colores.texto,
   },
   rubroTexto: {
     fontSize: 12,
-    color: COLORES.secundario,
+    color: colores.secundario,
     marginTop: 2,
   },
   estadoChip: {
@@ -605,10 +596,10 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
   },
   estadoAbierto: {
-    backgroundColor: COLORES.abiertoFondo,
+    backgroundColor: colores.abiertoFondo,
   },
   estadoCerrado: {
-    backgroundColor: COLORES.cerradoFondo,
+    backgroundColor: colores.cerradoFondo,
   },
   estadoPunto: {
     width: 7,
@@ -616,25 +607,25 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   estadoPuntoAbierto: {
-    backgroundColor: COLORES.abierto,
+    backgroundColor: colores.abierto,
   },
   estadoPuntoCerrado: {
-    backgroundColor: COLORES.cerrado,
+    backgroundColor: colores.cerrado,
   },
   estadoChipTexto: {
     fontSize: 11,
     fontWeight: "700",
   },
   estadoTextoAbierto: {
-    color: COLORES.abierto,
+    color: colores.abierto,
   },
   estadoTextoCerrado: {
-    color: COLORES.cerrado,
+    color: colores.cerrado,
   },
   cardText: {
     fontSize: 13,
     lineHeight: 18,
-    color: "#475467",
+    color: colores.secundario,
   },
   cardMeta: {
     gap: 5,
@@ -647,12 +638,12 @@ const styles = StyleSheet.create({
   },
   metaTexto: {
     fontSize: 12,
-    color: COLORES.secundario,
+    color: colores.secundario,
   },
   direccion: {
     flex: 1,
     fontSize: 12,
-    color: COLORES.secundario,
+    color: colores.secundario,
   },
   estadoContainer: {
     flex: 1,
@@ -665,7 +656,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: "#EAF0F8",
+    backgroundColor: colores.comercioFondo,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 14,
@@ -674,7 +665,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: COLORES.cerradoFondo,
+    backgroundColor: colores.cerradoFondo,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 14,
@@ -682,20 +673,20 @@ const styles = StyleSheet.create({
   estadoTitulo: {
     fontSize: 18,
     fontWeight: "800",
-    color: COLORES.texto,
+    color: colores.texto,
     textAlign: "center",
     marginTop: 8,
   },
   estadoTexto: {
     fontSize: 14,
     lineHeight: 20,
-    color: COLORES.secundario,
+    color: colores.secundario,
     textAlign: "center",
     marginTop: 6,
   },
   botonLimpiar: {
     marginTop: 16,
-    backgroundColor: COLORES.primario,
+    backgroundColor: colores.primario,
     borderRadius: 12,
     paddingHorizontal: 18,
     paddingVertical: 11,
@@ -705,4 +696,5 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontSize: 14,
   },
-});
+  });
+}
