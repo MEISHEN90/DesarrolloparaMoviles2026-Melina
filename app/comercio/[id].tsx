@@ -112,6 +112,7 @@ function GaleriaComercio({ imagenes }: { imagenes: string[] }) {
 
 function Estrellas({ cantidad }: { cantidad: number }) {
   const { colores } = useTema();
+  const styles = useMemo(() => crearEstilos(colores), [colores]);
 
   return (
     <View style={styles.estrellasFila}>
