@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Comercios CdelU",
-    "slug": "comercios-cdelu",
+    "name": "Directorio de Comercios Concepción del Uruguay",
+    "slug": "directorio-comercios-cdelu",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "comercioscdelu",
+    "scheme": "directoriocdelu",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
