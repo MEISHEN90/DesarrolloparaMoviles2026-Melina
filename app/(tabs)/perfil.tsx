@@ -21,6 +21,8 @@ import {
   marcarSesionDesbloqueada,
   obtenerUsuarioSesionId,
 } from "../../src/servicios/sesion";
+import { useTema } from "../../src/contexto/tema";
+import { PreferenciaTema } from "../../src/servicios/preferencias";
 import { Usuario } from "../../src/tipos/modelos";
 
 const COLORES = {
@@ -70,7 +72,48 @@ function AccesoHerramienta({
   );
 }
 
+function SelectorTema({
+  valor,
+  seleccionado,
+  etiqueta,
+  icono,
+  onPress,
+}: {
+  valor: PreferenciaTema;
+  seleccionado: boolean;
+  etiqueta: string;
+  icono: keyof typeof Ionicons.glyphMap;
+  onPress: (valor: PreferenciaTema) => void;
+}) {
+  return (
+    <Pressable
+      onPress={() => onPress(valor)}
+      style={[
+        styles.opcionTema,
+        seleccionado && styles.opcionTemaSeleccionada,
+      ]}
+      accessibilityRole="radio"
+      accessibilityState={{ selected: seleccionado }}
+    >
+      <Ionicons
+        name={icono}
+        size={18}
+        color={seleccionado ? "#FFFFFF" : COLORES.primario}
+      />
+      <Text
+        style={[
+          styles.opcionTemaTexto,
+          seleccionado && styles.opcionTemaTextoSeleccionado,
+        ]}
+      >
+        {etiqueta}
+      </Text>
+    </Pressable>
+  );
+}
+
 export default function PerfilScreen() {
+  const { preferencia, cambiarTema } = useTema();
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [cargando, setCargando] = useState(true);
   const [requiereBiometria, setRequiereBiometria] = useState(false);
@@ -146,6 +189,10 @@ export default function PerfilScreen() {
     setUsuario(null);
     setUsuarioSesionId(null);
     setRequiereBiometria(false);
+  }
+
+  function seleccionarTema(valor: PreferenciaTema) {
+    void cambiarTema(valor);
   }
 
   if (cargando) {
@@ -251,12 +298,29 @@ export default function PerfilScreen() {
             </View>
           </View>
 
-          <View style={styles.preferenciaFila}>
-            <View>
-              <Text style={styles.preferenciaTitulo}>Apariencia</Text>
-              <Text style={styles.preferenciaValor}>Sistema</Text>
-            </View>
-            <Ionicons name="phone-portrait-outline" size={20} color={COLORES.secundario} />
+          <Text style={styles.preferenciaTitulo}>Apariencia</Text>
+          <View style={styles.selectorTema}>
+            <SelectorTema
+              valor="system"
+              seleccionado={preferencia === "system"}
+              etiqueta="Sistema"
+              icono="phone-portrait-outline"
+              onPress={seleccionarTema}
+            />
+            <SelectorTema
+              valor="light"
+              seleccionado={preferencia === "light"}
+              etiqueta="Claro"
+              icono="sunny-outline"
+              onPress={seleccionarTema}
+            />
+            <SelectorTema
+              valor="dark"
+              seleccionado={preferencia === "dark"}
+              etiqueta="Oscuro"
+              icono="moon-outline"
+              onPress={seleccionarTema}
+            />
           </View>
         </View>
       </ScrollView>
@@ -378,15 +442,28 @@ export default function PerfilScreen() {
           </View>
         </View>
 
-        <View style={styles.preferenciaFila}>
-          <View>
-            <Text style={styles.preferenciaTitulo}>Apariencia</Text>
-            <Text style={styles.preferenciaValor}>Sistema</Text>
-          </View>
-          <Ionicons
-            name="phone-portrait-outline"
-            size={20}
-            color={COLORES.secundario}
+        <Text style={styles.preferenciaTitulo}>Apariencia</Text>
+        <View style={styles.selectorTema}>
+          <SelectorTema
+            valor="system"
+            seleccionado={preferencia === "system"}
+            etiqueta="Sistema"
+            icono="phone-portrait-outline"
+            onPress={seleccionarTema}
+          />
+          <SelectorTema
+            valor="light"
+            seleccionado={preferencia === "light"}
+            etiqueta="Claro"
+            icono="sunny-outline"
+            onPress={seleccionarTema}
+          />
+          <SelectorTema
+            valor="dark"
+            seleccionado={preferencia === "dark"}
+            etiqueta="Oscuro"
+            icono="moon-outline"
+            onPress={seleccionarTema}
           />
         </View>
       </View>
@@ -620,26 +697,39 @@ const styles = StyleSheet.create({
     color: COLORES.secundario,
     marginTop: 2,
   },
-  preferenciaFila: {
-    marginTop: 14,
-    minHeight: 58,
-    backgroundColor: "#FAFBFC",
-    borderRadius: 14,
-    paddingHorizontal: 13,
-    paddingVertical: 10,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
   preferenciaTitulo: {
     fontSize: 14,
     fontWeight: "700",
     color: COLORES.texto,
+    marginTop: 14,
   },
-  preferenciaValor: {
+  selectorTema: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 10,
+  },
+  opcionTema: {
+    flex: 1,
+    minHeight: 44,
+    borderWidth: 1,
+    borderColor: COLORES.borde,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 4,
+    backgroundColor: "#FAFBFC",
+  },
+  opcionTemaSeleccionada: {
+    backgroundColor: COLORES.primario,
+    borderColor: COLORES.primario,
+  },
+  opcionTemaTexto: {
     fontSize: 12,
-    color: COLORES.secundario,
-    marginTop: 2,
+    fontWeight: "700",
+    color: COLORES.primario,
+  },
+  opcionTemaTextoSeleccionado: {
+    color: "#FFFFFF",
   },
   botonCerrarSesion: {
     minHeight: 48,
