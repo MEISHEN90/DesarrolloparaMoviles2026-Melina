@@ -1,8 +1,10 @@
+import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -20,6 +22,53 @@ import {
   obtenerUsuarioSesionId,
 } from "../../src/servicios/sesion";
 import { Usuario } from "../../src/tipos/modelos";
+
+const COLORES = {
+  primario: "#2457A6",
+  primarioOscuro: "#173A70",
+  fondo: "#F5F7FA",
+  tarjeta: "#FFFFFF",
+  borde: "#D9DEE7",
+  texto: "#1B1D21",
+  secundario: "#667085",
+  peligro: "#B42318",
+  peligroFondo: "#FDECEC",
+  comercioFondo: "#EAF0F8",
+  vecinoFondo: "#EAF7EE",
+  vecino: "#2E7D32",
+};
+
+function AccesoHerramienta({
+  icono,
+  titulo,
+  descripcion,
+  onPress,
+}: {
+  icono: keyof typeof Ionicons.glyphMap;
+  titulo: string;
+  descripcion: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={styles.acceso}
+      accessibilityRole="button"
+      accessibilityLabel={titulo}
+    >
+      <View style={styles.accesoIcono}>
+        <Ionicons name={icono} size={22} color={COLORES.primario} />
+      </View>
+
+      <View style={styles.accesoTexto}>
+        <Text style={styles.accesoTitulo}>{titulo}</Text>
+        <Text style={styles.accesoDescripcion}>{descripcion}</Text>
+      </View>
+
+      <Ionicons name="chevron-forward" size={20} color={COLORES.secundario} />
+    </Pressable>
+  );
+}
 
 export default function PerfilScreen() {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
@@ -102,18 +151,25 @@ export default function PerfilScreen() {
   if (cargando) {
     return (
       <View style={styles.estadoContainer}>
-        <ActivityIndicator size="large" />
-        <Text style={styles.descripcion}>Verificando sesión...</Text>
+        <ActivityIndicator size="large" color={COLORES.primario} />
+        <Text style={styles.estadoTitulo}>Verificando sesión</Text>
+        <Text style={styles.estadoTexto}>
+          Estamos preparando los datos de tu cuenta.
+        </Text>
       </View>
     );
   }
 
   if (usuarioSesionId && requiereBiometria && !usuario) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.title}>Confirmar identidad</Text>
+      <View style={styles.estadoContainer}>
+        <View style={styles.biometriaIcono}>
+          <Ionicons name="finger-print-outline" size={34} color={COLORES.primario} />
+        </View>
 
-        <Text style={styles.descripcion}>
+        <Text style={styles.estadoTitulo}>Confirmar identidad</Text>
+
+        <Text style={styles.estadoTexto}>
           Tenés una sesión iniciada. Confirmá tu identidad para acceder a los
           datos de tu cuenta.
         </Text>
@@ -121,23 +177,32 @@ export default function PerfilScreen() {
         <Pressable
           onPress={manejarBiometria}
           disabled={autenticando}
-          style={[styles.boton, autenticando && styles.botonDeshabilitado]}
+          style={[
+            styles.botonPrincipal,
+            styles.botonBiometria,
+            autenticando && styles.botonDeshabilitado,
+          ]}
           accessibilityRole="button"
           accessibilityLabel="Ingresar con biometría"
         >
           {autenticando ? (
-            <ActivityIndicator />
+            <ActivityIndicator color="#FFFFFF" />
           ) : (
-            <Text style={styles.botonTexto}>Ingresar con biometría</Text>
+            <>
+              <Ionicons name="finger-print-outline" size={20} color="#FFFFFF" />
+              <Text style={styles.botonPrincipalTexto}>
+                Ingresar con biometría
+              </Text>
+            </>
           )}
         </Pressable>
 
         <Pressable
           onPress={manejarCerrarSesion}
-          style={styles.botonSecundario}
+          style={styles.botonTextoPlano}
           accessibilityRole="button"
         >
-          <Text style={styles.botonSecundarioTexto}>Cerrar sesión</Text>
+          <Text style={styles.botonTextoPlanoPeligro}>Cerrar sesión</Text>
         </Pressable>
       </View>
     );
@@ -145,82 +210,186 @@ export default function PerfilScreen() {
 
   if (!usuario) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.title}>Mi perfil</Text>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.bienvenida}>
+          <View style={styles.avatarGrande}>
+            <Ionicons name="person-outline" size={34} color={COLORES.primario} />
+          </View>
 
-        <Text style={styles.descripcion}>
-          Podés consultar comercios y promociones sin iniciar sesión.
-        </Text>
+          <Text style={styles.title}>Mi perfil</Text>
 
-        <Text style={styles.descripcion}>
-          Iniciá sesión para acceder a favoritos, reseñas y promociones
-          asociadas a tu cuenta.
-        </Text>
-
-        <Pressable
-          onPress={() => router.push("/login")}
-          style={styles.boton}
-          accessibilityRole="button"
-          accessibilityLabel="Iniciar sesión"
-        >
-          <Text style={styles.botonTexto}>Iniciar sesión</Text>
-        </Pressable>
-      </View>
-    );
-  }
-
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Mi perfil</Text>
-
-      <Text style={styles.label}>Nombre</Text>
-      <Text style={styles.descripcion}>{usuario.nombre}</Text>
-
-      <Text style={styles.label}>Correo electrónico</Text>
-      <Text style={styles.descripcion}>{usuario.email}</Text>
-
-      <Text style={styles.label}>Tipo de cuenta</Text>
-      <Text style={styles.descripcion}>
-        {usuario.rol === "vecino" ? "Vecino" : "Comercio"}
-      </Text>
-
-      {usuario.rol === "comercio" && (
-        <View style={styles.seccionComercio}>
-          <Text style={styles.seccionTitulo}>Herramientas del comercio</Text>
-
-          <Text style={styles.descripcion}>
-            Escaneá el código QR de un cliente para registrar el uso de una
-            promoción.
+          <Text style={styles.descripcionCentrada}>
+            Consultá comercios y promociones sin iniciar sesión. Ingresá para
+            acceder a favoritos, reseñas y beneficios asociados a tu cuenta.
           </Text>
 
           <Pressable
-            onPress={() => router.push("/mi-comercio")}
-            style={styles.boton}
+            onPress={() => router.push("/login")}
+            style={styles.botonPrincipal}
             accessibilityRole="button"
-            accessibilityLabel="Editar datos del comercio"
+            accessibilityLabel="Iniciar sesión"
           >
-            <Text style={styles.botonTexto}>Editar datos del comercio</Text>
-          </Pressable>
-
-          <Pressable
-            onPress={() => router.push("/escanear-qr")}
-            style={styles.boton}
-            accessibilityRole="button"
-            accessibilityLabel="Escanear código QR"
-          >
-            <Text style={styles.botonTexto}>Escanear código QR</Text>
-          </Pressable>
-
-          <Pressable
-            onPress={() => router.push("/imagen-comercio")}
-            style={styles.boton}
-            accessibilityRole="button"
-            accessibilityLabel="Gestionar fotos y video del comercio"
-          >
-            <Text style={styles.botonTexto}>Gestionar fotos y video</Text>
+            <Ionicons name="log-in-outline" size={20} color="#FFFFFF" />
+            <Text style={styles.botonPrincipalTexto}>Iniciar sesión</Text>
           </Pressable>
         </View>
+
+        <View style={styles.tarjeta}>
+          <View style={styles.seccionEncabezado}>
+            <View style={styles.seccionIcono}>
+              <Ionicons name="settings-outline" size={19} color={COLORES.primario} />
+            </View>
+            <View style={styles.seccionTituloBloque}>
+              <Text style={styles.seccionTitulo}>Configuración</Text>
+              <Text style={styles.seccionSubtitulo}>
+                Próximamente podrás elegir la apariencia de la aplicación.
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.preferenciaFila}>
+            <View>
+              <Text style={styles.preferenciaTitulo}>Apariencia</Text>
+              <Text style={styles.preferenciaValor}>Sistema</Text>
+            </View>
+            <Ionicons name="phone-portrait-outline" size={20} color={COLORES.secundario} />
+          </View>
+        </View>
+      </ScrollView>
+    );
+  }
+
+  const esComercio = usuario.rol === "comercio";
+
+  return (
+    <ScrollView
+      style={styles.scroll}
+      contentContainerStyle={styles.container}
+      showsVerticalScrollIndicator={false}
+    >
+      <View style={styles.perfilCard}>
+        <View style={styles.perfilSuperior}>
+          <View style={styles.avatarGrande}>
+            <Ionicons
+              name={esComercio ? "storefront-outline" : "person-outline"}
+              size={32}
+              color={COLORES.primario}
+            />
+          </View>
+
+          <View style={styles.perfilDatos}>
+            <Text style={styles.title}>{usuario.nombre}</Text>
+            <Text style={styles.correo}>{usuario.email}</Text>
+
+            <View
+              style={[
+                styles.rolChip,
+                esComercio ? styles.rolComercio : styles.rolVecino,
+              ]}
+            >
+              <Ionicons
+                name={esComercio ? "storefront-outline" : "home-outline"}
+                size={14}
+                color={esComercio ? COLORES.primarioOscuro : COLORES.vecino}
+              />
+              <Text
+                style={[
+                  styles.rolTexto,
+                  esComercio
+                    ? styles.rolTextoComercio
+                    : styles.rolTextoVecino,
+                ]}
+              >
+                {esComercio ? "Cuenta comercio" : "Cuenta vecino"}
+              </Text>
+            </View>
+          </View>
+        </View>
+      </View>
+
+      {esComercio ? (
+        <View style={styles.tarjeta}>
+          <View style={styles.seccionEncabezado}>
+            <View style={styles.seccionIcono}>
+              <Ionicons name="construct-outline" size={19} color={COLORES.primario} />
+            </View>
+            <View style={styles.seccionTituloBloque}>
+              <Text style={styles.seccionTitulo}>Herramientas del comercio</Text>
+              <Text style={styles.seccionSubtitulo}>
+                Administrá la información pública y las operaciones de tu local.
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.accesosLista}>
+            <AccesoHerramienta
+              icono="create-outline"
+              titulo="Editar datos del comercio"
+              descripcion="Información general y horarios"
+              onPress={() => router.push("/mi-comercio")}
+            />
+
+            <AccesoHerramienta
+              icono="images-outline"
+              titulo="Gestionar fotos y video"
+              descripcion="Contenido multimedia de la ficha pública"
+              onPress={() => router.push("/imagen-comercio")}
+            />
+
+            <AccesoHerramienta
+              icono="qr-code-outline"
+              titulo="Escanear código QR"
+              descripcion="Registrar el uso de una promoción"
+              onPress={() => router.push("/escanear-qr")}
+            />
+          </View>
+        </View>
+      ) : (
+        <View style={styles.tarjeta}>
+          <View style={styles.seccionEncabezado}>
+            <View style={styles.seccionIcono}>
+              <Ionicons name="heart-outline" size={19} color={COLORES.primario} />
+            </View>
+            <View style={styles.seccionTituloBloque}>
+              <Text style={styles.seccionTitulo}>Tu cuenta</Text>
+              <Text style={styles.seccionSubtitulo}>
+                Tus favoritos, reseñas y promociones están asociados a esta
+                cuenta.
+              </Text>
+            </View>
+          </View>
+        </View>
       )}
+
+      <View style={styles.tarjeta}>
+        <View style={styles.seccionEncabezado}>
+          <View style={styles.seccionIcono}>
+            <Ionicons name="settings-outline" size={19} color={COLORES.primario} />
+          </View>
+          <View style={styles.seccionTituloBloque}>
+            <Text style={styles.seccionTitulo}>Configuración</Text>
+            <Text style={styles.seccionSubtitulo}>
+              Preferencias generales de la aplicación.
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.preferenciaFila}>
+          <View>
+            <Text style={styles.preferenciaTitulo}>Apariencia</Text>
+            <Text style={styles.preferenciaValor}>Sistema</Text>
+          </View>
+          <Ionicons
+            name="phone-portrait-outline"
+            size={20}
+            color={COLORES.secundario}
+          />
+        </View>
+      </View>
 
       <Pressable
         onPress={manejarCerrarSesion}
@@ -228,24 +397,265 @@ export default function PerfilScreen() {
         accessibilityRole="button"
         accessibilityLabel="Cerrar sesión"
       >
-        <Text style={styles.botonTexto}>Cerrar sesión</Text>
+        <Ionicons name="log-out-outline" size={19} color={COLORES.peligro} />
+        <Text style={styles.botonCerrarSesionTexto}>Cerrar sesión</Text>
       </Pressable>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24 },
-  estadoContainer: { flex: 1, alignItems: "center", justifyContent: "center", gap: 12 },
-  title: { fontSize: 26, fontWeight: "700", marginBottom: 16 },
-  label: { fontSize: 14, fontWeight: "700", marginTop: 8 },
-  descripcion: { fontSize: 16, marginBottom: 12 },
-  seccionComercio: { marginTop: 12, paddingTop: 16, borderTopWidth: 1 },
-  seccionTitulo: { fontSize: 20, fontWeight: "700", marginBottom: 8 },
-  boton: { marginTop: 12, borderWidth: 1, borderRadius: 10, paddingVertical: 14, alignItems: "center" },
-  botonCerrarSesion: { marginTop: 24, borderWidth: 1, borderRadius: 10, paddingVertical: 14, alignItems: "center" },
-  botonDeshabilitado: { opacity: 0.6 },
-  botonTexto: { fontSize: 16, fontWeight: "700" },
-  botonSecundario: { marginTop: 8, paddingVertical: 12, alignItems: "center" },
-  botonSecundarioTexto: { fontSize: 15, fontWeight: "600" },
+  scroll: {
+    flex: 1,
+    backgroundColor: COLORES.fondo,
+  },
+  container: {
+    padding: 18,
+    paddingBottom: 34,
+    gap: 14,
+  },
+  estadoContainer: {
+    flex: 1,
+    backgroundColor: COLORES.fondo,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 30,
+  },
+  estadoTitulo: {
+    fontSize: 22,
+    fontWeight: "800",
+    color: COLORES.texto,
+    textAlign: "center",
+    marginTop: 14,
+  },
+  estadoTexto: {
+    fontSize: 15,
+    lineHeight: 21,
+    color: COLORES.secundario,
+    textAlign: "center",
+    marginTop: 7,
+  },
+  biometriaIcono: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: "#EAF0F8",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  bienvenida: {
+    backgroundColor: COLORES.tarjeta,
+    borderWidth: 1,
+    borderColor: COLORES.borde,
+    borderRadius: 20,
+    padding: 22,
+    alignItems: "center",
+  },
+  avatarGrande: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: "#EAF0F8",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  title: {
+    fontSize: 25,
+    fontWeight: "800",
+    color: COLORES.texto,
+    letterSpacing: -0.3,
+  },
+  descripcionCentrada: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: COLORES.secundario,
+    textAlign: "center",
+    marginTop: 10,
+  },
+  botonPrincipal: {
+    minHeight: 48,
+    backgroundColor: COLORES.primario,
+    borderRadius: 13,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    marginTop: 18,
+  },
+  botonBiometria: {
+    width: "100%",
+  },
+  botonPrincipalTexto: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  botonDeshabilitado: {
+    opacity: 0.6,
+  },
+  botonTextoPlano: {
+    marginTop: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+  },
+  botonTextoPlanoPeligro: {
+    color: COLORES.peligro,
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  perfilCard: {
+    backgroundColor: COLORES.tarjeta,
+    borderWidth: 1,
+    borderColor: COLORES.borde,
+    borderRadius: 20,
+    padding: 18,
+  },
+  perfilSuperior: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+  },
+  perfilDatos: {
+    flex: 1,
+  },
+  correo: {
+    fontSize: 14,
+    color: COLORES.secundario,
+    marginTop: 3,
+  },
+  rolChip: {
+    alignSelf: "flex-start",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    borderRadius: 999,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    marginTop: 10,
+  },
+  rolComercio: {
+    backgroundColor: COLORES.comercioFondo,
+  },
+  rolVecino: {
+    backgroundColor: COLORES.vecinoFondo,
+  },
+  rolTexto: {
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  rolTextoComercio: {
+    color: COLORES.primarioOscuro,
+  },
+  rolTextoVecino: {
+    color: COLORES.vecino,
+  },
+  tarjeta: {
+    backgroundColor: COLORES.tarjeta,
+    borderWidth: 1,
+    borderColor: COLORES.borde,
+    borderRadius: 18,
+    padding: 16,
+  },
+  seccionEncabezado: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+  },
+  seccionIcono: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: "#EAF0F8",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  seccionTituloBloque: {
+    flex: 1,
+  },
+  seccionTitulo: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: COLORES.texto,
+  },
+  seccionSubtitulo: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: COLORES.secundario,
+    marginTop: 3,
+  },
+  accesosLista: {
+    marginTop: 14,
+    gap: 9,
+  },
+  acceso: {
+    minHeight: 70,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 11,
+    backgroundColor: "#FAFBFC",
+    borderRadius: 14,
+    padding: 12,
+  },
+  accesoIcono: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: "#EAF0F8",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  accesoTexto: {
+    flex: 1,
+  },
+  accesoTitulo: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: COLORES.texto,
+  },
+  accesoDescripcion: {
+    fontSize: 12,
+    lineHeight: 17,
+    color: COLORES.secundario,
+    marginTop: 2,
+  },
+  preferenciaFila: {
+    marginTop: 14,
+    minHeight: 58,
+    backgroundColor: "#FAFBFC",
+    borderRadius: 14,
+    paddingHorizontal: 13,
+    paddingVertical: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  preferenciaTitulo: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: COLORES.texto,
+  },
+  preferenciaValor: {
+    fontSize: 12,
+    color: COLORES.secundario,
+    marginTop: 2,
+  },
+  botonCerrarSesion: {
+    minHeight: 48,
+    borderWidth: 1,
+    borderColor: "#F5B8B3",
+    backgroundColor: COLORES.peligroFondo,
+    borderRadius: 13,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingHorizontal: 16,
+  },
+  botonCerrarSesionTexto: {
+    color: COLORES.peligro,
+    fontSize: 15,
+    fontWeight: "700",
+  },
 });
