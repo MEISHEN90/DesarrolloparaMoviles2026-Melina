@@ -29,6 +29,8 @@ export interface ColoresTema {
   cerradoFondo: string;
   promo: string;
   promoFondo: string;
+  aviso: string;
+  avisoFondo: string;
   estrellas: string;
 }
 
@@ -52,6 +54,8 @@ const coloresClaro: ColoresTema = {
   cerradoFondo: "#FDECEC",
   promo: "#B54708",
   promoFondo: "#FFF4E5",
+  aviso: "#8A4B00",
+  avisoFondo: "#FFF4E5",
   estrellas: "#B7791F",
 };
 
@@ -75,6 +79,8 @@ const coloresOscuro: ColoresTema = {
   cerradoFondo: "#351A1D",
   promo: "#FFB86B",
   promoFondo: "#332515",
+  aviso: "#FFB86B",
+  avisoFondo: "#332515",
   estrellas: "#F4C15D",
 };
 
