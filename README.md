@@ -25,11 +25,10 @@ Repositorio principal del grupo:
 
 [github.com/Ranger9707/DesarrolloparaMoviles2026](https://github.com/Ranger9707/DesarrolloparaMoviles2026)
 
-Rama consolidada de continuidad del Trabajo Integrador:
+Rama de desarrollo utilizada actualmente:
 
-`Integracion-Final`
-
-> `Melina-Casco---Test` se conserva como respaldo estable anterior a la integración de la API y los aportes de Matías/José.
+[`Melina-Casco---Test`](https://github.com/Ranger9707/DesarrolloparaMoviles2026/tree/Melina-Casco---Test)
+Cada uno por favor clone o use una nueva rama para ir testeando. Aún no esta colocado nada en MAIN.
 
 ---
 
@@ -455,7 +454,7 @@ Rol: Comercio
 | 5. Cámara y archivos | ✅ Completada |
 | 6. Persistencia y conectividad | ✅ Completada |
 | 7. Notificaciones, háptica y multimedia | ✅ Completada |
-| 8. API de la cátedra | 🟡 Integración en curso: AUTH, comercios, rubros y reseñas conectados |
+| 8. API de la cátedra | ⏳ Pendiente de disponibilidad |
 | 9. Testing y revisión funcional | 🟡 En desarrollo |
 | 10. Identidad y entrega final | ⏳ Pendiente |
 
@@ -485,27 +484,9 @@ Rol: Comercio
 
 ## API de la cátedra
 
-La API oficial ya fue entregada por la cátedra y la integración comenzó en la rama `Integracion-Final`.
+La integración con la API permanece pendiente porque todavía no se dispone del material definitivo de la cátedra.
 
-Actualmente están conectados a la API real:
-
-- autenticación y registro;
-- usuario actual (`GET /yo`);
-- comercios;
-- rubros;
-- reseñas.
-
-Los módulos que aún no fueron migrados completamente conservan temporalmente su implementación previa/mocks detrás de la capa de servicios.
-
-Para Android Emulator, la URL local por defecto es:
-
-```text
-http://10.0.2.2:3000
-```
-
-También puede definirse con `EXPO_PUBLIC_API_URL` sin modificar el código.
-
-Ver [CONSOLIDACION.md](./CONSOLIDACION.md) para el detalle de la unificación y los próximos pasos.
+Mientras tanto, el proyecto utiliza mocks detrás de una capa de servicios propia para facilitar el reemplazo progresivo cuando los endpoints estén disponibles.
 
 ---
 
@@ -535,7 +516,7 @@ eas build --platform android --profile preview
 - Evitar actualizar Expo o React Native de forma individual sin coordinación con el grupo.
 - Verificar TypeScript, lint y tests antes de hacer push.
 - No incluir `node_modules` en commits.
-- Mantener los mocks solamente en los módulos todavía no migrados; la API real debe ser la fuente principal en los módulos ya integrados.
+- Mantener los mocks y la capa de servicios separados para facilitar la futura integración con la API.
 
 ---
 
