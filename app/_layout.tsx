@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import "react-native-reanimated";
 
-import { useColorScheme } from "@/hooks/use-color-scheme";
+import { TemaProvider, useTema } from "../src/contexto/tema";
 import { useSincronizacionResenas } from "../src/hooks/use-sincronizacion-resenas";
 import { inicializarBaseDatos } from "../src/servicios/base-datos";
 import { configurarNotificaciones } from "../src/servicios/notificaciones";
@@ -23,8 +23,8 @@ function SincronizadorResenas() {
   return null;
 }
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
+function ContenidoRaiz() {
+  const { tema, colores, cargado } = useTema();
   const [baseLista, setBaseLista] = useState(false);
   const [errorBase, setErrorBase] = useState<string | null>(null);
 
@@ -43,38 +43,52 @@ export default function RootLayout() {
       }
     }
 
-    prepararAplicacion();
+    void prepararAplicacion();
   }, []);
 
-  if (errorBase) {
+  const temaNavegacion = tema === "dark" ? DarkTheme : DefaultTheme;
+
+  if (!cargado || !baseLista) {
     return (
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-        <View style={styles.estadoContainer}>
-          <Text style={styles.titulo}>Error al iniciar la aplicación</Text>
-          <Text style={styles.descripcion}>{errorBase}</Text>
+      <ThemeProvider value={temaNavegacion}>
+        <View style={[styles.estadoContainer, { backgroundColor: colores.fondo }]}>
+          <ActivityIndicator size="large" color={colores.primario} />
+          <Text style={[styles.descripcion, { color: colores.secundario }]}>
+            Preparando datos locales...
+          </Text>
         </View>
-        <StatusBar style="auto" />
+        <StatusBar style={tema === "dark" ? "light" : "dark"} />
       </ThemeProvider>
     );
   }
 
-  if (!baseLista) {
+  if (errorBase) {
     return (
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-        <View style={styles.estadoContainer}>
-          <ActivityIndicator size="large" />
-          <Text style={styles.descripcion}>Preparando datos locales...</Text>
+      <ThemeProvider value={temaNavegacion}>
+        <View style={[styles.estadoContainer, { backgroundColor: colores.fondo }]}>
+          <Text style={[styles.titulo, { color: colores.texto }]}>
+            Error al iniciar la aplicación
+          </Text>
+          <Text style={[styles.descripcion, { color: colores.secundario }]}>
+            {errorBase}
+          </Text>
         </View>
-        <StatusBar style="auto" />
+        <StatusBar style={tema === "dark" ? "light" : "dark"} />
       </ThemeProvider>
     );
   }
 
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={temaNavegacion}>
       <SincronizadorResenas />
 
-      <Stack>
+      <Stack
+        screenOptions={{
+          headerStyle: { backgroundColor: colores.tarjeta },
+          headerTintColor: colores.texto,
+          contentStyle: { backgroundColor: colores.fondo },
+        }}
+      >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="login" options={{ title: "Iniciar sesión" }} />
         <Stack.Screen name="registro" options={{ title: "Crear cuenta" }} />
@@ -82,14 +96,22 @@ export default function RootLayout() {
         <Stack.Screen name="mi-comercio" options={{ title: "Mi comercio" }} />
         <Stack.Screen
           name="imagen-comercio"
-          options={{ title: "Imagen del comercio" }}
+          options={{ title: "Fotos y video" }}
         />
         <Stack.Screen name="comercio/[id]" options={{ title: "Comercio" }} />
         <Stack.Screen name="promocion/[id]" options={{ title: "Promoción" }} />
       </Stack>
 
-      <StatusBar style="auto" />
+      <StatusBar style={tema === "dark" ? "light" : "dark"} />
     </ThemeProvider>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <TemaProvider>
+      <ContenidoRaiz />
+    </TemaProvider>
   );
 }
 
