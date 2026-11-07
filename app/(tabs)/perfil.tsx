@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -10,35 +10,20 @@ import {
   View,
 } from "react-native";
 
+import { useTema } from "../../src/contexto/tema";
 import { obtenerUsuarioActual } from "../../src/servicios/autenticacion";
 import {
   autenticarConBiometria,
   biometriaDisponible,
 } from "../../src/servicios/biometria";
+import { PreferenciaTema } from "../../src/servicios/preferencias";
 import {
   cerrarSesion,
   estaSesionDesbloqueada,
   marcarSesionDesbloqueada,
   obtenerUsuarioSesionId,
 } from "../../src/servicios/sesion";
-import { useTema } from "../../src/contexto/tema";
-import { PreferenciaTema } from "../../src/servicios/preferencias";
 import { Usuario } from "../../src/tipos/modelos";
-
-const COLORES = {
-  primario: "#2457A6",
-  primarioOscuro: "#173A70",
-  fondo: "#F5F7FA",
-  tarjeta: "#FFFFFF",
-  borde: "#D9DEE7",
-  texto: "#1B1D21",
-  secundario: "#667085",
-  peligro: "#B42318",
-  peligroFondo: "#FDECEC",
-  comercioFondo: "#EAF0F8",
-  vecinoFondo: "#EAF7EE",
-  vecino: "#2E7D32",
-};
 
 function AccesoHerramienta({
   icono,
@@ -51,6 +36,9 @@ function AccesoHerramienta({
   descripcion: string;
   onPress: () => void;
 }) {
+  const { colores } = useTema();
+  const styles = useMemo(() => crearEstilos(colores), [colores]);
+
   return (
     <Pressable
       onPress={onPress}
@@ -59,7 +47,7 @@ function AccesoHerramienta({
       accessibilityLabel={titulo}
     >
       <View style={styles.accesoIcono}>
-        <Ionicons name={icono} size={22} color={COLORES.primario} />
+        <Ionicons name={icono} size={22} color={colores.primario} />
       </View>
 
       <View style={styles.accesoTexto}>
@@ -67,7 +55,7 @@ function AccesoHerramienta({
         <Text style={styles.accesoDescripcion}>{descripcion}</Text>
       </View>
 
-      <Ionicons name="chevron-forward" size={20} color={COLORES.secundario} />
+      <Ionicons name="chevron-forward" size={20} color={colores.secundario} />
     </Pressable>
   );
 }
@@ -85,6 +73,9 @@ function SelectorTema({
   icono: keyof typeof Ionicons.glyphMap;
   onPress: (valor: PreferenciaTema) => void;
 }) {
+  const { colores } = useTema();
+  const styles = useMemo(() => crearEstilos(colores), [colores]);
+
   return (
     <Pressable
       onPress={() => onPress(valor)}
@@ -98,7 +89,7 @@ function SelectorTema({
       <Ionicons
         name={icono}
         size={18}
-        color={seleccionado ? "#FFFFFF" : COLORES.primario}
+        color={seleccionado ? "#FFFFFF" : colores.primario}
       />
       <Text
         style={[
@@ -113,7 +104,8 @@ function SelectorTema({
 }
 
 export default function PerfilScreen() {
-  const { preferencia, cambiarTema } = useTema();
+  const { preferencia, cambiarTema, colores } = useTema();
+  const styles = useMemo(() => crearEstilos(colores), [colores]);
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [cargando, setCargando] = useState(true);
   const [requiereBiometria, setRequiereBiometria] = useState(false);
@@ -134,9 +126,7 @@ export default function PerfilScreen() {
       const usuarioId = await obtenerUsuarioSesionId();
       setUsuarioSesionId(usuarioId);
 
-      if (!usuarioId) {
-        return;
-      }
+      if (!usuarioId) return;
 
       if (estaSesionDesbloqueada()) {
         await cargarUsuario();
@@ -163,18 +153,14 @@ export default function PerfilScreen() {
   );
 
   async function manejarBiometria() {
-    if (!usuarioSesionId) {
-      return;
-    }
+    if (!usuarioSesionId) return;
 
     try {
       setAutenticando(true);
 
       const autenticado = await autenticarConBiometria();
 
-      if (!autenticado) {
-        return;
-      }
+      if (!autenticado) return;
 
       marcarSesionDesbloqueada();
       await cargarUsuario();
@@ -198,7 +184,7 @@ export default function PerfilScreen() {
   if (cargando) {
     return (
       <View style={styles.estadoContainer}>
-        <ActivityIndicator size="large" color={COLORES.primario} />
+        <ActivityIndicator size="large" color={colores.primario} />
         <Text style={styles.estadoTitulo}>Verificando sesión</Text>
         <Text style={styles.estadoTexto}>
           Estamos preparando los datos de tu cuenta.
@@ -211,7 +197,7 @@ export default function PerfilScreen() {
     return (
       <View style={styles.estadoContainer}>
         <View style={styles.biometriaIcono}>
-          <Ionicons name="finger-print-outline" size={34} color={COLORES.primario} />
+          <Ionicons name="finger-print-outline" size={34} color={colores.primario} />
         </View>
 
         <Text style={styles.estadoTitulo}>Confirmar identidad</Text>
@@ -264,7 +250,7 @@ export default function PerfilScreen() {
       >
         <View style={styles.bienvenida}>
           <View style={styles.avatarGrande}>
-            <Ionicons name="person-outline" size={34} color={COLORES.primario} />
+            <Ionicons name="person-outline" size={34} color={colores.primario} />
           </View>
 
           <Text style={styles.title}>Mi perfil</Text>
@@ -285,44 +271,10 @@ export default function PerfilScreen() {
           </Pressable>
         </View>
 
-        <View style={styles.tarjeta}>
-          <View style={styles.seccionEncabezado}>
-            <View style={styles.seccionIcono}>
-              <Ionicons name="settings-outline" size={19} color={COLORES.primario} />
-            </View>
-            <View style={styles.seccionTituloBloque}>
-              <Text style={styles.seccionTitulo}>Configuración</Text>
-              <Text style={styles.seccionSubtitulo}>
-                Próximamente podrás elegir la apariencia de la aplicación.
-              </Text>
-            </View>
-          </View>
-
-          <Text style={styles.preferenciaTitulo}>Apariencia</Text>
-          <View style={styles.selectorTema}>
-            <SelectorTema
-              valor="system"
-              seleccionado={preferencia === "system"}
-              etiqueta="Sistema"
-              icono="phone-portrait-outline"
-              onPress={seleccionarTema}
-            />
-            <SelectorTema
-              valor="light"
-              seleccionado={preferencia === "light"}
-              etiqueta="Claro"
-              icono="sunny-outline"
-              onPress={seleccionarTema}
-            />
-            <SelectorTema
-              valor="dark"
-              seleccionado={preferencia === "dark"}
-              etiqueta="Oscuro"
-              icono="moon-outline"
-              onPress={seleccionarTema}
-            />
-          </View>
-        </View>
+        <Configuracion
+          preferencia={preferencia}
+          seleccionarTema={seleccionarTema}
+        />
       </ScrollView>
     );
   }
@@ -341,7 +293,7 @@ export default function PerfilScreen() {
             <Ionicons
               name={esComercio ? "storefront-outline" : "person-outline"}
               size={32}
-              color={COLORES.primario}
+              color={colores.primario}
             />
           </View>
 
@@ -358,14 +310,12 @@ export default function PerfilScreen() {
               <Ionicons
                 name={esComercio ? "storefront-outline" : "home-outline"}
                 size={14}
-                color={esComercio ? COLORES.primarioOscuro : COLORES.vecino}
+                color={esComercio ? colores.primarioOscuro : colores.vecino}
               />
               <Text
                 style={[
                   styles.rolTexto,
-                  esComercio
-                    ? styles.rolTextoComercio
-                    : styles.rolTextoVecino,
+                  esComercio ? styles.rolTextoComercio : styles.rolTextoVecino,
                 ]}
               >
                 {esComercio ? "Cuenta comercio" : "Cuenta vecino"}
@@ -379,7 +329,7 @@ export default function PerfilScreen() {
         <View style={styles.tarjeta}>
           <View style={styles.seccionEncabezado}>
             <View style={styles.seccionIcono}>
-              <Ionicons name="construct-outline" size={19} color={COLORES.primario} />
+              <Ionicons name="construct-outline" size={19} color={colores.primario} />
             </View>
             <View style={styles.seccionTituloBloque}>
               <Text style={styles.seccionTitulo}>Herramientas del comercio</Text>
@@ -396,14 +346,12 @@ export default function PerfilScreen() {
               descripcion="Información general y horarios"
               onPress={() => router.push("/mi-comercio")}
             />
-
             <AccesoHerramienta
               icono="images-outline"
               titulo="Gestionar fotos y video"
               descripcion="Contenido multimedia de la ficha pública"
               onPress={() => router.push("/imagen-comercio")}
             />
-
             <AccesoHerramienta
               icono="qr-code-outline"
               titulo="Escanear código QR"
@@ -416,7 +364,7 @@ export default function PerfilScreen() {
         <View style={styles.tarjeta}>
           <View style={styles.seccionEncabezado}>
             <View style={styles.seccionIcono}>
-              <Ionicons name="heart-outline" size={19} color={COLORES.primario} />
+              <Ionicons name="heart-outline" size={19} color={colores.primario} />
             </View>
             <View style={styles.seccionTituloBloque}>
               <Text style={styles.seccionTitulo}>Tu cuenta</Text>
@@ -429,44 +377,10 @@ export default function PerfilScreen() {
         </View>
       )}
 
-      <View style={styles.tarjeta}>
-        <View style={styles.seccionEncabezado}>
-          <View style={styles.seccionIcono}>
-            <Ionicons name="settings-outline" size={19} color={COLORES.primario} />
-          </View>
-          <View style={styles.seccionTituloBloque}>
-            <Text style={styles.seccionTitulo}>Configuración</Text>
-            <Text style={styles.seccionSubtitulo}>
-              Preferencias generales de la aplicación.
-            </Text>
-          </View>
-        </View>
-
-        <Text style={styles.preferenciaTitulo}>Apariencia</Text>
-        <View style={styles.selectorTema}>
-          <SelectorTema
-            valor="system"
-            seleccionado={preferencia === "system"}
-            etiqueta="Sistema"
-            icono="phone-portrait-outline"
-            onPress={seleccionarTema}
-          />
-          <SelectorTema
-            valor="light"
-            seleccionado={preferencia === "light"}
-            etiqueta="Claro"
-            icono="sunny-outline"
-            onPress={seleccionarTema}
-          />
-          <SelectorTema
-            valor="dark"
-            seleccionado={preferencia === "dark"}
-            etiqueta="Oscuro"
-            icono="moon-outline"
-            onPress={seleccionarTema}
-          />
-        </View>
-      </View>
+      <Configuracion
+        preferencia={preferencia}
+        seleccionarTema={seleccionarTema}
+      />
 
       <Pressable
         onPress={manejarCerrarSesion}
@@ -474,278 +388,255 @@ export default function PerfilScreen() {
         accessibilityRole="button"
         accessibilityLabel="Cerrar sesión"
       >
-        <Ionicons name="log-out-outline" size={19} color={COLORES.peligro} />
+        <Ionicons name="log-out-outline" size={19} color={colores.peligro} />
         <Text style={styles.botonCerrarSesionTexto}>Cerrar sesión</Text>
       </Pressable>
     </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  scroll: {
-    flex: 1,
-    backgroundColor: COLORES.fondo,
-  },
-  container: {
-    padding: 18,
-    paddingBottom: 34,
-    gap: 14,
-  },
-  estadoContainer: {
-    flex: 1,
-    backgroundColor: COLORES.fondo,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 30,
-  },
-  estadoTitulo: {
-    fontSize: 22,
-    fontWeight: "800",
-    color: COLORES.texto,
-    textAlign: "center",
-    marginTop: 14,
-  },
-  estadoTexto: {
-    fontSize: 15,
-    lineHeight: 21,
-    color: COLORES.secundario,
-    textAlign: "center",
-    marginTop: 7,
-  },
-  biometriaIcono: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: "#EAF0F8",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  bienvenida: {
-    backgroundColor: COLORES.tarjeta,
-    borderWidth: 1,
-    borderColor: COLORES.borde,
-    borderRadius: 20,
-    padding: 22,
-    alignItems: "center",
-  },
-  avatarGrande: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: "#EAF0F8",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  title: {
-    fontSize: 25,
-    fontWeight: "800",
-    color: COLORES.texto,
-    letterSpacing: -0.3,
-  },
-  descripcionCentrada: {
-    fontSize: 15,
-    lineHeight: 22,
-    color: COLORES.secundario,
-    textAlign: "center",
-    marginTop: 10,
-  },
-  botonPrincipal: {
-    minHeight: 48,
-    backgroundColor: COLORES.primario,
-    borderRadius: 13,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    marginTop: 18,
-  },
-  botonBiometria: {
-    width: "100%",
-  },
-  botonPrincipalTexto: {
-    color: "#FFFFFF",
-    fontSize: 15,
-    fontWeight: "700",
-  },
-  botonDeshabilitado: {
-    opacity: 0.6,
-  },
-  botonTextoPlano: {
-    marginTop: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-  },
-  botonTextoPlanoPeligro: {
-    color: COLORES.peligro,
-    fontSize: 15,
-    fontWeight: "700",
-  },
-  perfilCard: {
-    backgroundColor: COLORES.tarjeta,
-    borderWidth: 1,
-    borderColor: COLORES.borde,
-    borderRadius: 20,
-    padding: 18,
-  },
-  perfilSuperior: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-  },
-  perfilDatos: {
-    flex: 1,
-  },
-  correo: {
-    fontSize: 14,
-    color: COLORES.secundario,
-    marginTop: 3,
-  },
-  rolChip: {
-    alignSelf: "flex-start",
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    borderRadius: 999,
-    paddingHorizontal: 9,
-    paddingVertical: 5,
-    marginTop: 10,
-  },
-  rolComercio: {
-    backgroundColor: COLORES.comercioFondo,
-  },
-  rolVecino: {
-    backgroundColor: COLORES.vecinoFondo,
-  },
-  rolTexto: {
-    fontSize: 12,
-    fontWeight: "700",
-  },
-  rolTextoComercio: {
-    color: COLORES.primarioOscuro,
-  },
-  rolTextoVecino: {
-    color: COLORES.vecino,
-  },
-  tarjeta: {
-    backgroundColor: COLORES.tarjeta,
-    borderWidth: 1,
-    borderColor: COLORES.borde,
-    borderRadius: 18,
-    padding: 16,
-  },
-  seccionEncabezado: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 10,
-  },
-  seccionIcono: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
-    backgroundColor: "#EAF0F8",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  seccionTituloBloque: {
-    flex: 1,
-  },
-  seccionTitulo: {
-    fontSize: 18,
-    fontWeight: "800",
-    color: COLORES.texto,
-  },
-  seccionSubtitulo: {
-    fontSize: 13,
-    lineHeight: 18,
-    color: COLORES.secundario,
-    marginTop: 3,
-  },
-  accesosLista: {
-    marginTop: 14,
-    gap: 9,
-  },
-  acceso: {
-    minHeight: 70,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 11,
-    backgroundColor: "#FAFBFC",
-    borderRadius: 14,
-    padding: 12,
-  },
-  accesoIcono: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
-    backgroundColor: "#EAF0F8",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  accesoTexto: {
-    flex: 1,
-  },
-  accesoTitulo: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: COLORES.texto,
-  },
-  accesoDescripcion: {
-    fontSize: 12,
-    lineHeight: 17,
-    color: COLORES.secundario,
-    marginTop: 2,
-  },
-  preferenciaTitulo: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: COLORES.texto,
-    marginTop: 14,
-  },
-  selectorTema: {
-    flexDirection: "row",
-    gap: 8,
-    marginTop: 10,
-  },
-  opcionTema: {
-    flex: 1,
-    minHeight: 44,
-    borderWidth: 1,
-    borderColor: COLORES.borde,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 4,
-    backgroundColor: "#FAFBFC",
-  },
-  opcionTemaSeleccionada: {
-    backgroundColor: COLORES.primario,
-    borderColor: COLORES.primario,
-  },
-  opcionTemaTexto: {
-    fontSize: 12,
-    fontWeight: "700",
-    color: COLORES.primario,
-  },
-  opcionTemaTextoSeleccionado: {
-    color: "#FFFFFF",
-  },
-  botonCerrarSesion: {
-    minHeight: 48,
-    borderWidth: 1,
-    borderColor: "#F5B8B3",
-    backgroundColor: COLORES.peligroFondo,
-    borderRadius: 13,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    paddingHorizontal: 16,
-  },
-  botonCerrarSesionTexto: {
-    color: COLORES.peligro,
-    fontSize: 15,
-    fontWeight: "700",
-  },
-});
+function Configuracion({
+  preferencia,
+  seleccionarTema,
+}: {
+  preferencia: PreferenciaTema;
+  seleccionarTema: (valor: PreferenciaTema) => void;
+}) {
+  const { colores } = useTema();
+  const styles = useMemo(() => crearEstilos(colores), [colores]);
+
+  return (
+    <View style={styles.tarjeta}>
+      <View style={styles.seccionEncabezado}>
+        <View style={styles.seccionIcono}>
+          <Ionicons name="settings-outline" size={19} color={colores.primario} />
+        </View>
+        <View style={styles.seccionTituloBloque}>
+          <Text style={styles.seccionTitulo}>Configuración</Text>
+          <Text style={styles.seccionSubtitulo}>
+            Preferencias generales de la aplicación.
+          </Text>
+        </View>
+      </View>
+
+      <Text style={styles.preferenciaTitulo}>Apariencia</Text>
+      <View style={styles.selectorTema}>
+        <SelectorTema
+          valor="system"
+          seleccionado={preferencia === "system"}
+          etiqueta="Sistema"
+          icono="phone-portrait-outline"
+          onPress={seleccionarTema}
+        />
+        <SelectorTema
+          valor="light"
+          seleccionado={preferencia === "light"}
+          etiqueta="Claro"
+          icono="sunny-outline"
+          onPress={seleccionarTema}
+        />
+        <SelectorTema
+          valor="dark"
+          seleccionado={preferencia === "dark"}
+          etiqueta="Oscuro"
+          icono="moon-outline"
+          onPress={seleccionarTema}
+        />
+      </View>
+    </View>
+  );
+}
+
+function crearEstilos(colores: ReturnType<typeof useTema>["colores"]) {
+  return StyleSheet.create({
+    scroll: { flex: 1, backgroundColor: colores.fondo },
+    container: { padding: 18, paddingBottom: 34, gap: 14 },
+    estadoContainer: {
+      flex: 1,
+      backgroundColor: colores.fondo,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: 30,
+    },
+    estadoTitulo: {
+      fontSize: 22,
+      fontWeight: "800",
+      color: colores.texto,
+      textAlign: "center",
+      marginTop: 14,
+    },
+    estadoTexto: {
+      fontSize: 15,
+      lineHeight: 21,
+      color: colores.secundario,
+      textAlign: "center",
+      marginTop: 7,
+    },
+    biometriaIcono: {
+      width: 72,
+      height: 72,
+      borderRadius: 36,
+      backgroundColor: colores.comercioFondo,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    bienvenida: {
+      backgroundColor: colores.tarjeta,
+      borderWidth: 1,
+      borderColor: colores.borde,
+      borderRadius: 20,
+      padding: 22,
+      alignItems: "center",
+    },
+    avatarGrande: {
+      width: 64,
+      height: 64,
+      borderRadius: 32,
+      backgroundColor: colores.comercioFondo,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    title: {
+      fontSize: 25,
+      fontWeight: "800",
+      color: colores.texto,
+      letterSpacing: -0.3,
+    },
+    descripcionCentrada: {
+      fontSize: 15,
+      lineHeight: 22,
+      color: colores.secundario,
+      textAlign: "center",
+      marginTop: 10,
+    },
+    botonPrincipal: {
+      minHeight: 48,
+      backgroundColor: colores.primario,
+      borderRadius: 13,
+      paddingHorizontal: 20,
+      paddingVertical: 12,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      marginTop: 18,
+    },
+    botonBiometria: { width: "100%" },
+    botonPrincipalTexto: { color: "#FFFFFF", fontSize: 15, fontWeight: "700" },
+    botonDeshabilitado: { opacity: 0.6 },
+    botonTextoPlano: { marginTop: 10, paddingVertical: 10, paddingHorizontal: 16 },
+    botonTextoPlanoPeligro: { color: colores.peligro, fontSize: 15, fontWeight: "700" },
+    perfilCard: {
+      backgroundColor: colores.tarjeta,
+      borderWidth: 1,
+      borderColor: colores.borde,
+      borderRadius: 20,
+      padding: 18,
+    },
+    perfilSuperior: { flexDirection: "row", alignItems: "center", gap: 14 },
+    perfilDatos: { flex: 1 },
+    correo: { fontSize: 14, color: colores.secundario, marginTop: 3 },
+    rolChip: {
+      alignSelf: "flex-start",
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 5,
+      borderRadius: 999,
+      paddingHorizontal: 9,
+      paddingVertical: 5,
+      marginTop: 10,
+    },
+    rolComercio: { backgroundColor: colores.comercioFondo },
+    rolVecino: { backgroundColor: colores.vecinoFondo },
+    rolTexto: { fontSize: 12, fontWeight: "700" },
+    rolTextoComercio: { color: colores.primarioOscuro },
+    rolTextoVecino: { color: colores.vecino },
+    tarjeta: {
+      backgroundColor: colores.tarjeta,
+      borderWidth: 1,
+      borderColor: colores.borde,
+      borderRadius: 18,
+      padding: 16,
+    },
+    seccionEncabezado: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
+    seccionIcono: {
+      width: 34,
+      height: 34,
+      borderRadius: 10,
+      backgroundColor: colores.comercioFondo,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    seccionTituloBloque: { flex: 1 },
+    seccionTitulo: { fontSize: 18, fontWeight: "800", color: colores.texto },
+    seccionSubtitulo: {
+      fontSize: 13,
+      lineHeight: 18,
+      color: colores.secundario,
+      marginTop: 3,
+    },
+    accesosLista: { marginTop: 14, gap: 9 },
+    acceso: {
+      minHeight: 70,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 11,
+      backgroundColor: colores.superficie,
+      borderRadius: 14,
+      padding: 12,
+    },
+    accesoIcono: {
+      width: 42,
+      height: 42,
+      borderRadius: 12,
+      backgroundColor: colores.comercioFondo,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    accesoTexto: { flex: 1 },
+    accesoTitulo: { fontSize: 15, fontWeight: "700", color: colores.texto },
+    accesoDescripcion: {
+      fontSize: 12,
+      lineHeight: 17,
+      color: colores.secundario,
+      marginTop: 2,
+    },
+    preferenciaTitulo: {
+      fontSize: 14,
+      fontWeight: "700",
+      color: colores.texto,
+      marginTop: 14,
+    },
+    selectorTema: { flexDirection: "row", gap: 8, marginTop: 10 },
+    opcionTema: {
+      flex: 1,
+      minHeight: 44,
+      borderWidth: 1,
+      borderColor: colores.borde,
+      borderRadius: 12,
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 4,
+      backgroundColor: colores.superficie,
+    },
+    opcionTemaSeleccionada: {
+      backgroundColor: colores.primario,
+      borderColor: colores.primario,
+    },
+    opcionTemaTexto: { fontSize: 12, fontWeight: "700", color: colores.primario },
+    opcionTemaTextoSeleccionado: { color: "#FFFFFF" },
+    botonCerrarSesion: {
+      minHeight: 48,
+      borderWidth: 1,
+      borderColor: colores.peligro,
+      backgroundColor: colores.peligroFondo,
+      borderRadius: 13,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      paddingHorizontal: 16,
+    },
+    botonCerrarSesionTexto: { color: colores.peligro, fontSize: 15, fontWeight: "700" },
+  });
+}
