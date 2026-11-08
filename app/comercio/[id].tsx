@@ -18,6 +18,7 @@ import {
   obtenerUsuarioActual,
   obtenerUsuarioPorId,
 } from "../../src/servicios/autenticacion";
+import { prepararMultimediaComercio } from "../../src/servicios/archivos";
 import { obtenerComercioPorId } from "../../src/servicios/comercios";
 import { alternarFavorito, esFavorito } from "../../src/servicios/favoritos";
 import { obtenerPromocionesPorComercio } from "../../src/servicios/promociones";
@@ -147,6 +148,8 @@ export default function ComercioDetalleScreen() {
   const [favorito, setFavorito] = useState(false);
   const [esVecino, setEsVecino] = useState(false);
   const [resenas, setResenas] = useState<ResenaConAutor[]>([]);
+  const [imagenesFicha, setImagenesFicha] = useState<string[]>([]);
+  const [videoFicha, setVideoFicha] = useState<string | null>(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -164,6 +167,15 @@ export default function ComercioDetalleScreen() {
         }
 
         setComercio(datos);
+
+        const multimedia = await prepararMultimediaComercio(
+          datos.id,
+          datos.imagenes,
+          datos.videoUrl,
+        );
+
+        setImagenesFicha(multimedia.imagenes);
+        setVideoFicha(multimedia.videoUrl);
 
         const usuarioActual = await obtenerUsuarioActual();
         const usuarioEsVecino = usuarioActual?.rol === "vecino";
@@ -429,7 +441,7 @@ export default function ComercioDetalleScreen() {
           ) : null}
         </View>
 
-        <GaleriaComercio imagenes={comercio.imagenes} />
+        <GaleriaComercio imagenes={imagenesFicha} />
 
         {promocionVigente ? (
           <View style={styles.promocionCard}>
@@ -476,9 +488,7 @@ export default function ComercioDetalleScreen() {
           <Text style={styles.descripcion}>{comercio.descripcion}</Text>
         </View>
 
-        {comercio.videoUrl ? (
-          <VideoComercio videoUrl={comercio.videoUrl} />
-        ) : null}
+        {videoFicha ? <VideoComercio videoUrl={videoFicha} /> : null}
 
         <View style={styles.tarjetaSeccion}>
           <View style={styles.seccionEncabezado}>
