@@ -168,14 +168,19 @@ export default function ComercioDetalleScreen() {
 
         setComercio(datos);
 
-        const multimedia = await prepararMultimediaComercio(
+        // Mostramos la multimedia remota de inmediato y la copiamos en segundo plano.
+        // Así la ficha no queda bloqueada esperando la descarga del video.
+        setImagenesFicha(datos.imagenes);
+        setVideoFicha(datos.videoUrl);
+
+        void prepararMultimediaComercio(
           datos.id,
           datos.imagenes,
           datos.videoUrl,
-        );
-
-        setImagenesFicha(multimedia.imagenes);
-        setVideoFicha(multimedia.videoUrl);
+        ).then((multimedia) => {
+          setImagenesFicha(multimedia.imagenes);
+          setVideoFicha(multimedia.videoUrl);
+        });
 
         const usuarioActual = await obtenerUsuarioActual();
         const usuarioEsVecino = usuarioActual?.rol === "vecino";
