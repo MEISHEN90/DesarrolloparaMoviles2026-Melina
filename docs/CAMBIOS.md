@@ -1,8 +1,5 @@
 # Cambios sobre la versión original
 
-**Base de comparación:** la carpeta de backup `DESARROLLOMOVILESBACKUP` (snapshot del proyecto tal como estaba cuando se retomó el trabajo: reseñas sólo lectura, sin avisos, con `fetch`, sin permisos declarados, sin build de APK configurado).
-
-**Dónde vive esta versión:** branch [`Matias-app-casi-final`](https://github.com/Ranger9707/DesarrolloparaMoviles2026/tree/Matias-app-casi-final) del repo del grupo, como commit encima de `main` (historia conectada, sin force).
 
 **Estado final:** TypeScript sin errores · **87/87 tests** (10 suites) · toda la app verificada en el emulador (Pixel 8, Expo Go SDK 54) contra la API de la cátedra corriendo en `10.0.2.2:3000`.
 
@@ -215,10 +212,3 @@ Respecto del backup, también entran: `src/servicios/avisos.ts` (revisión de pr
 
 **Tests:** `npx tsc --noEmit && npx jest` (10 suites, 87 tests).
 
----
-
-## Lo que queda
-
-- **Mapa:** filtro por rubro y botón "Ir" (cómo llegar con la app de mapas). El orden por distancia ya estaba.
-- **Build EAS preview (APK):** `eas.json` ya está listo; falta decidir con la cátedra si se exige el APK o alcanza GitHub + demo en emulador, y a qué `apiUrl` apunta el build (hoy `10.0.2.2:3000` sólo sirve en emulador; si se entrega APK habría que apuntarlo a una API desplegada o documentar cómo levantar la local).
-- **Repositorio:** ✅ hecho — esta versión está en la branch `Matias-app-casi-final` del repo del grupo (ver al inicio). Falta lo organizativo: acordar con el grupo si esto se integra a `main` por PR o se entrega la branch directamente.
