@@ -21,11 +21,11 @@ Las capturas están en [`docs/capturas/`](./capturas/).
 
 **Ambiente:** la Play Store instala siempre el Expo Go más nuevo (SDK 58), que no puede correr proyectos SDK 54 — por eso el emulador nuevo quedó con **Expo Go 54.0.8** instalado por `adb install` desde los releases oficiales de Expo.
 
-![Expo Go equivocado](capturas/ambiente-expo-go-sdk-equivocado.png)
+<img src="capturas/ambiente-expo-go-sdk-equivocado.png" width="320" alt="Expo Go equivocado" />
 
 La app corriendo en el emulador nuevo con los 39 comercios de la API real:
 
-![App corriendo](capturas/ambiente-app-corriendo.png)
+<img src="capturas/ambiente-app-corriendo.png" width="320" alt="App corriendo" />
 
 ---
 
@@ -40,33 +40,33 @@ La app corriendo en el emulador nuevo con los 39 comercios de la API real:
 
 Ficha con botón de reseña y favorito:
 
-![Ficha interactiva](capturas/resenas-ficha-interactiva.png)
+<img src="capturas/resenas-ficha-interactiva.png" width="320" alt="Ficha interactiva" />
 
 Acciones sobre la reseña propia (Editar / Borrar):
 
-![Acciones](capturas/resenas-acciones-editar-borrar.png)
+<img src="capturas/resenas-acciones-editar-borrar.png" width="320" alt="Acciones" />
 
 "Reportar" en las reseñas de otros vecinos:
 
-![Reportar](capturas/resenas-reportar-ajenas.png)
+<img src="capturas/resenas-reportar-ajenas.png" width="320" alt="Reportar" />
 
 **Responder como dueño** — el botón sólo aparece para la cuenta del comercio y en reseñas sin respuesta:
 
-![Responder como dueño](capturas/resenas-responder-como-dueno.png)
+<img src="capturas/resenas-responder-como-dueno.png" width="320" alt="Responder como dueño" />
 
-![Formulario de respuesta](capturas/resenas-formulario-respuesta.png)
+<img src="capturas/resenas-formulario-respuesta.png" width="320" alt="Formulario de respuesta" />
 
 Respuesta publicada y renderizada dentro de la tarjeta (y el botón Responder desaparece — regla de una sola vez):
 
-![Respuesta publicada](capturas/resenas-respuesta-publicada.png)
+<img src="capturas/resenas-respuesta-publicada.png" width="320" alt="Respuesta publicada" />
 
 Edición guardada contra la API: la reseña pasó de 3★ a 4★ y el promedio del listado se actualizó a "4.0 · 1 reseña":
 
-![Edición guardada](capturas/resenas-edicion-guardada.png)
+<img src="capturas/resenas-edicion-guardada.png" width="320" alt="Edición guardada" />
 
 Reseña escrita **sin conexión** (durante otra sesión) y sincronizada después — "Tu reseña" en Farmacia del Pueblo con sus acciones:
 
-![Offline sincronizada](capturas/resenas-offline-sincronizada.png)
+<img src="capturas/resenas-offline-sincronizada.png" width="320" alt="Offline sincronizada" />
 
 ---
 
@@ -80,15 +80,15 @@ Reseña escrita **sin conexión** (durante otra sesión) y sincronizada después
 
 Detalle nuevo con el bloque "Tu código exclusivo":
 
-![Detalle de promo](capturas/qr-detalle-promo.png)
+<img src="capturas/qr-detalle-promo.png" width="320" alt="Detalle de promo" />
 
 QR renderizado:
 
-![QR renderizado](capturas/qr-renderizado.png)
+<img src="capturas/qr-renderizado.png" width="320" alt="QR renderizado" />
 
 Código en texto (mismo payload que valida el escáner):
 
-![Código en texto](capturas/qr-codigo-texto.png)
+<img src="capturas/qr-codigo-texto.png" width="320" alt="Código en texto" />
 
 ---
 
@@ -102,15 +102,15 @@ Código en texto (mismo payload que valida el escáner):
 
 Categorías + filtro de rubro + comercio en la tarjeta:
 
-![Categorías](capturas/promos-categorias.png)
+<img src="capturas/promos-categorias.png" width="320" alt="Categorías" />
 
 "Por vencer" con datos reales (promo que vence al día siguiente):
 
-![Por vencer](capturas/promos-por-vencer.png)
+<img src="capturas/promos-por-vencer.png" width="320" alt="Por vencer" />
 
 Filtro por rubro (Indumentaria → sólo Boutique Aurora):
 
-![Filtro por rubro](capturas/promos-filtro-rubro.png)
+<img src="capturas/promos-filtro-rubro.png" width="320" alt="Filtro por rubro" />
 
 ---
 
@@ -126,35 +126,35 @@ Filtro por rubro (Indumentaria → sólo Boutique Aurora):
 
 Panel con estados y usos:
 
-![Lista](capturas/mipromos-lista.png)
+<img src="capturas/mipromos-lista.png" width="320" alt="Lista" />
 
 Formulario de alta:
 
-![Formulario](capturas/mipromos-formulario.png)
+<img src="capturas/mipromos-formulario.png" width="320" alt="Formulario" />
 
 Validación en vivo (guardar vacío):
 
-![Validación](capturas/mipromos-validacion.png)
+<img src="capturas/mipromos-validacion.png" width="320" alt="Validación" />
 
 Promo creada — aparece primera con Activa y 0 usos:
 
-![Creada](capturas/mipromos-creada.png)
+<img src="capturas/mipromos-creada.png" width="320" alt="Creada" />
 
 Edición guardada (5% → 7%):
 
-![Editada](capturas/mipromos-editada.png)
+<img src="capturas/mipromos-editada.png" width="320" alt="Editada" />
 
 Baja con confirmación:
 
-![Confirmar baja](capturas/mipromos-confirmar-baja.png)
+<img src="capturas/mipromos-confirmar-baja.png" width="320" alt="Confirmar baja" />
 
 Dada de baja — chip gris, sin acciones, con nota de historial:
 
-![Dada de baja](capturas/mipromos-baja.png)
+<img src="capturas/mipromos-baja.png" width="320" alt="Dada de baja" />
 
 Verificación cruzada: la promo dada de baja **desapareció del listado público**:
 
-![Listado público](capturas/mipromos-publico-sin-baja.png)
+<img src="capturas/mipromos-publico-sin-baja.png" width="320" alt="Listado público" />
 
 ---
 
@@ -168,11 +168,11 @@ Verificación cruzada: la promo dada de baja **desapareció del listado público
 
 Sección nueva, con el estado previo de marta (Gastronomía + Ferretería):
 
-![Perfil rubros](capturas/perfil-rubros-avisos.png)
+<img src="capturas/perfil-rubros-avisos.png" width="320" alt="Perfil rubros" />
 
 Después de apagar avisos y agregar "Hogar" — verificado leyendo `/yo` directamente: `avisosActivos: false` → reencendido y `rubrosDeInteres` incluyó `rub-hogar`:
 
-![Hogar agregado](capturas/perfil-hogar-agregado.png)
+<img src="capturas/perfil-hogar-agregado.png" width="320" alt="Hogar agregado" />
 
 ---
 
@@ -182,11 +182,11 @@ Después de apagar avisos y agregar "Hogar" — verificado leyendo `/yo` directa
 
    Antes del fix (5★ / vacío en lugar de 3★ "Bueno!"):
 
-   ![Bug](capturas/resenas-bug-formulario-sin-prefill.png)
+   <img src="capturas/resenas-bug-formulario-sin-prefill.png" width="320" alt="Bug" />
 
    Después (precarga la reseña existente):
 
-   ![Fix](capturas/resenas-formulario-prefill-corregido.png)
+   <img src="capturas/resenas-formulario-prefill-corregido.png" width="320" alt="Fix" />
 
 2. **Botón "Responder" visible en reseñas ya respondidas** — detectado por los tests de componente; condición `!resena.respuesta` (ya venía de la carpeta vieja, conservado en el trasplante).
 
@@ -194,7 +194,7 @@ Después de apagar avisos y agregar "Hogar" — verificado leyendo `/yo` directa
 
 Respecto del backup, también entran: `src/servicios/avisos.ts` (revisión de promos nuevas de favoritos/rubros + recordatorios de por vencer, con límites por revisión), `src/hooks/use-avisos-promociones.ts` (revisa al arrancar y al volver a primer plano, máximo una vez cada 5 minutos), helpers en `src/utils/promociones.ts` y el hook montado en `app/_layout.tsx`. Verificado en vivo: promo creada por el comercio → notificación local en la cortina:
 
-![Aviso de promo nueva](capturas/avisos-notificacion-promo-nueva.png)
+<img src="capturas/avisos-notificacion-promo-nueva.png" width="320" alt="Aviso de promo nueva" />
 
 ---
 
