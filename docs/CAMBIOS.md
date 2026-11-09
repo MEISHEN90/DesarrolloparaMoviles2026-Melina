@@ -2,6 +2,8 @@
 
 **Base de comparación:** la carpeta de backup `DESARROLLOMOVILESBACKUP` (snapshot del proyecto tal como estaba cuando se retomó el trabajo: reseñas sólo lectura, sin avisos, con `fetch`, sin permisos declarados, sin build de APK configurado).
 
+**Dónde vive esta versión:** branch [`Matias-app-casi-final`](https://github.com/Ranger9707/DesarrolloparaMoviles2026/tree/Matias-app-casi-final) del repo del grupo, como commit encima de `main` (historia conectada, sin force).
+
 **Estado final:** TypeScript sin errores · **87/87 tests** (10 suites) · toda la app verificada en el emulador (Pixel 8, Expo Go SDK 54) contra la API de la cátedra corriendo en `10.0.2.2:3000`.
 
 Las capturas están en [`docs/capturas/`](./capturas/).
@@ -198,8 +200,25 @@ Respecto del backup, también entran: `src/servicios/avisos.ts` (revisión de pr
 
 ---
 
-## Pendientes
+## Cómo correr el proyecto
+
+**API de la cátedra** (la app no muestra datos sin ella):
+1. Clonar el repo oficial de la cátedra y entrar a `api-directorio-comercios/`.
+2. `pnpm install && pnpm dev` — queda en `http://localhost:3000`.
+3. Usuarios de demo (contraseña `demo1234` para todos): `marta@mail.com` (vecina), `tornillo@demo.ar` (comercio: Ferretería El Tornillo), `otro.comercio@demo.ar`, `nuevo@demo.ar`.
+
+**App** (requiere Node 20+):
+1. `npm install`
+2. `npx expo start` — abre Metro en el puerto 8081.
+3. En un emulador Android: instalar **Expo Go SDK 54** (la Play Store trae la más nueva, que no sirve; el APK 54.0.8 está en los releases oficiales de `expo/expo-go-releases` en GitHub). Luego `adb reverse tcp:8081 tcp:8081` y abrir en Expo Go `exp://10.0.2.2:8081`.
+4. `apiUrl` apunta a `10.0.2.2:3000` (el `localhost` de la máquina anfitriona visto desde el emulador) — está en `app.json` → `extra.apiUrl`.
+
+**Tests:** `npx tsc --noEmit && npx jest` (10 suites, 87 tests).
+
+---
+
+## Lo que queda
 
 - **Mapa:** filtro por rubro y botón "Ir" (cómo llegar con la app de mapas). El orden por distancia ya estaba.
-- **Git:** la carpeta no tiene repositorio; la consigna pide repo (preferido) o zip con `eas.json` y `app.json`, sin `node_modules`.
-- **Build EAS preview (APK):** `eas.json` ya está listo; falta decidir con la cátedra si se exige el APK o alcanza GitHub + demo en emulador, y a qué `apiUrl` apunta el build (hoy `10.0.2.2:3000` sólo sirve en emulador).
+- **Build EAS preview (APK):** `eas.json` ya está listo; falta decidir con la cátedra si se exige el APK o alcanza GitHub + demo en emulador, y a qué `apiUrl` apunta el build (hoy `10.0.2.2:3000` sólo sirve en emulador; si se entrega APK habría que apuntarlo a una API desplegada o documentar cómo levantar la local).
+- **Repositorio:** ✅ hecho — esta versión está en la branch `Matias-app-casi-final` del repo del grupo (ver al inicio). Falta lo organizativo: acordar con el grupo si esto se integra a `main` por PR o se entrega la branch directamente.
