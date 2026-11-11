@@ -282,9 +282,9 @@ export default function MapaScreen() {
 function crearEstilos(colores: ReturnType<typeof useTema>["colores"]) {
   return StyleSheet.create({
     container: { flex: 1, backgroundColor: colores.fondo },
-    mapa: { flex: 3 },
+    mapa: { flex: 2 },
     panel: {
-      flex: 2,
+      flex: 3,
       paddingHorizontal: 16,
       paddingTop: 14,
       paddingBottom: 8,
