@@ -14,11 +14,12 @@ import QRCode from "react-native-qrcode-svg";
 import { useTema } from "../../src/contexto/tema";
 import { obtenerComercioPorId } from "../../src/servicios/comercios";
 import { obtenerUsuarioActual } from "../../src/servicios/autenticacion";
-import { obtenerUsosPromocion, promocionYaUtilizada } from "../../src/servicios/usos-promociones";
+import {
+  generarUsoPromocion,
+  obtenerUsosPromocion,
+} from "../../src/servicios/usos-promociones";
 import { obtenerPromocionPorId } from "../../src/servicios/promociones";
-import { obtenerUsuarioSesionId } from "../../src/servicios/sesion";
-import { Comercio, Promocion } from "../../src/tipos/modelos";
-import { construirCodigoPromocion } from "../../src/utils/qr";
+import { Comercio, Promocion, UsoDePromocion } from "../../src/tipos/modelos";
 
 function formatearFecha(fecha: string): string {
   return new Date(fecha).toLocaleDateString("es-AR", {
@@ -35,10 +36,11 @@ export default function PromocionDetalleScreen() {
 
   const [promocion, setPromocion] = useState<Promocion | null>(null);
   const [comercio, setComercio] = useState<Comercio | null>(null);
-  const [usuarioSesionId, setUsuarioSesionId] = useState<string | null>(null);
+  const [usuarioAutenticado, setUsuarioAutenticado] = useState(false);
   const [esVecino, setEsVecino] = useState(false);
-  const [fechaDeUso, setFechaDeUso] = useState<string | null>(null);
+  const [usoPromocion, setUsoPromocion] = useState<UsoDePromocion | null>(null);
   const [codigoVisible, setCodigoVisible] = useState(false);
+  const [generandoCodigo, setGenerandoCodigo] = useState(false);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -48,14 +50,13 @@ export default function PromocionDetalleScreen() {
         setCargando(true);
         setError(null);
 
-        const [datos, sesionId, usuarioActual] = await Promise.all([
+        const [datos, usuarioActual] = await Promise.all([
           obtenerPromocionPorId(id),
-          obtenerUsuarioSesionId(),
           obtenerUsuarioActual(),
         ]);
 
         setPromocion(datos);
-        setUsuarioSesionId(sesionId);
+        setUsuarioAutenticado(usuarioActual !== null);
         setEsVecino(usuarioActual?.rol === "vecino");
 
         if (datos) {
@@ -64,17 +65,10 @@ export default function PromocionDetalleScreen() {
             .catch(() => setComercio(null));
         }
 
-        if (datos && sesionId) {
-          const usada = await promocionYaUtilizada(datos.id, sesionId);
-
-          if (usada) {
-            const usos = await obtenerUsosPromocion();
-            const usoPropio = usos.find(
-              (uso) => uso.promocionId === datos.id && uso.usuarioId === sesionId,
-            );
-
-            setFechaDeUso(usoPropio?.validadoEn ?? null);
-          }
+        if (datos && usuarioActual?.rol === "vecino") {
+          const usos = await obtenerUsosPromocion();
+          const usoPropio = usos.find((uso) => uso.promocionId === datos.id) ?? null;
+          setUsoPromocion(usoPropio);
         }
       } catch {
         setError("No fue posible cargar la promoción.");
@@ -124,10 +118,38 @@ export default function PromocionDetalleScreen() {
     );
   }
 
-  const codigoPromocion = usuarioSesionId
-    ? construirCodigoPromocion(promocion.id, usuarioSesionId)
-    : null;
+  const codigoPromocion = usoPromocion?.codigo ?? null;
+  const fechaDeUso = usoPromocion?.validadoEn ?? null;
   const promoUsada = fechaDeUso !== null;
+
+  async function alternarCodigo() {
+    if (codigoVisible) {
+      setCodigoVisible(false);
+      return;
+    }
+
+    try {
+      setGenerandoCodigo(true);
+      setError(null);
+
+      let uso = usoPromocion;
+
+      if (!uso) {
+        uso = await generarUsoPromocion(promocion.id);
+        setUsoPromocion(uso);
+      }
+
+      setCodigoVisible(true);
+    } catch (errorDesconocido) {
+      setError(
+        errorDesconocido instanceof Error
+          ? errorDesconocido.message
+          : "No fue posible generar el código.",
+      );
+    } finally {
+      setGenerandoCodigo(false);
+    }
+  }
 
   return (
     <>
@@ -223,7 +245,7 @@ export default function PromocionDetalleScreen() {
           </View>
         </View>
 
-        {promocion.soloApp && esVecino && usuarioSesionId ? (
+        {promocion.soloApp && esVecino ? (
           promoUsada ? (
             <View style={styles.tarjetaSeccion}>
               <View style={styles.seccionEncabezado}>
@@ -257,8 +279,9 @@ export default function PromocionDetalleScreen() {
               </View>
 
               <Pressable
-                onPress={() => setCodigoVisible(!codigoVisible)}
-                style={styles.botonCodigo}
+                onPress={alternarCodigo}
+                disabled={generandoCodigo}
+                style={[styles.botonCodigo, generandoCodigo && { opacity: 0.6 }]}
                 accessibilityRole="button"
                 accessibilityLabel={
                   codigoVisible ? "Ocultar mi código" : "Mostrar mi código"
@@ -270,7 +293,11 @@ export default function PromocionDetalleScreen() {
                   color="#FFFFFF"
                 />
                 <Text style={styles.botonCodigoTexto}>
-                  {codigoVisible ? "Ocultar mi código" : "Mostrar mi código"}
+                  {generandoCodigo
+                    ? "Generando código..."
+                    : codigoVisible
+                      ? "Ocultar mi código"
+                      : "Mostrar mi código"}
                 </Text>
               </Pressable>
 
@@ -304,7 +331,7 @@ export default function PromocionDetalleScreen() {
           )
         ) : null}
 
-        {promocion.soloApp && !usuarioSesionId ? (
+        {promocion.soloApp && !usuarioAutenticado ? (
           <View style={styles.tarjetaSeccion}>
             <View style={styles.seccionEncabezado}>
               <View style={styles.seccionIcono}>
