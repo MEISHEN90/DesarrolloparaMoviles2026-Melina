@@ -5,7 +5,6 @@ import Storage from "expo-sqlite/kv-store";
 import { obtenerUsuarioActual } from "./autenticacion";
 import { obtenerComerciosCache } from "./cache";
 import { obtenerPromociones } from "./promociones";
-import { Promocion } from "../tipos/modelos";
 import {
   estaPorVencer,
   filtrarPromocionesDeInteres,
