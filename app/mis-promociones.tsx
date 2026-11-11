@@ -24,7 +24,7 @@ import {
 } from "../src/servicios/mi-comercio";
 import { obtenerUsuarioActual } from "../src/servicios/autenticacion";
 import { Promocion } from "../src/tipos/modelos";
-import { EstadoDePromocion, estadoDePromocion } from "../src/utils/promociones";
+import { estadoDePromocion } from "../src/utils/promociones";
 
 function formatearFecha(fecha: string): string {
   return new Date(fecha).toLocaleDateString("es-AR", {
