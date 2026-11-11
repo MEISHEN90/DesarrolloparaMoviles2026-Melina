@@ -1,50 +1,13 @@
-export interface DatosQrPromocion {
-  tipo: "PROMO";
-  promocionId: string;
-  usuarioId: string;
-}
-
-/*
- * El código que muestra el vecino y el que interpreta el escáner del
- * comercio son la misma cadena: un solo formato, ida y vuelta.
+/**
+ * Los códigos de uso de promociones los genera la API de la cátedra.
+ * Formato documentado: CCU-XXXX-XXXX.
  */
-export function construirCodigoPromocion(
-  promocionId: string,
-  usuarioId: string,
-): string {
-  return `PROMO|${promocionId}|${usuarioId}`;
+export function normalizarCodigoPromocion(contenido: string): string {
+  return contenido.trim().toUpperCase();
 }
 
-export function interpretarQrPromocion(
-  contenido: string,
-): DatosQrPromocion | null {
-  const partes = contenido.trim().split("|");
+export function pareceCodigoPromocion(contenido: string): boolean {
+  const codigo = normalizarCodigoPromocion(contenido);
 
-  if (partes.length !== 3) {
-    return null;
-  }
-
-  const [tipo, promocionId, usuarioId] = partes;
-
-  if (tipo !== "PROMO") {
-    return null;
-  }
-
-  if (!promocionId || !usuarioId) {
-    return null;
-  }
-
-  if (!promocionId.startsWith("pro-")) {
-    return null;
-  }
-
-  if (!usuarioId.startsWith("usr-")) {
-    return null;
-  }
-
-  return {
-    tipo: "PROMO",
-    promocionId,
-    usuarioId,
-  };
+  return /^CCU-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(codigo);
 }
