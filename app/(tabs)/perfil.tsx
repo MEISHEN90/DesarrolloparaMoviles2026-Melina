@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from "@react-native-vector-icons/ionicons";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -31,13 +31,17 @@ import {
 } from "../../src/servicios/sesion";
 import { Rubro, Usuario } from "../../src/tipos/modelos";
 
+// El paquete nuevo tipa `name` con la unión literal de glifos existentes:
+// derivamos el tipo desde el propio componente en vez de `glyphMap`.
+type IconoNombre = Parameters<typeof Ionicons>[0]["name"];
+
 function AccesoHerramienta({
   icono,
   titulo,
   descripcion,
   onPress,
 }: {
-  icono: keyof typeof Ionicons.glyphMap;
+  icono: IconoNombre;
   titulo: string;
   descripcion: string;
   onPress: () => void;
@@ -76,7 +80,7 @@ function SelectorTema({
   valor: PreferenciaTema;
   seleccionado: boolean;
   etiqueta: string;
-  icono: keyof typeof Ionicons.glyphMap;
+  icono: IconoNombre;
   onPress: (valor: PreferenciaTema) => void;
 }) {
   const { colores } = useTema();
