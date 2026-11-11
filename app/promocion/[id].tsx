@@ -66,9 +66,18 @@ export default function PromocionDetalleScreen() {
         }
 
         if (datos && usuarioActual?.rol === "vecino") {
-          const usos = await obtenerUsosPromocion();
-          const usoPropio = usos.find((uso) => uso.promocionId === datos.id) ?? null;
-          setUsoPromocion(usoPropio);
+          try {
+            const usos = await obtenerUsosPromocion();
+            const usoPropio =
+              usos.find((uso) => uso.promocionId === datos.id) ?? null;
+
+            setUsoPromocion(usoPropio);
+          } catch {
+            // El detalle de la promoción debe seguir siendo visible aunque
+            // falle la consulta del historial de usos. El código podrá
+            // solicitarse luego mediante POST /promociones/:id/usos.
+            setUsoPromocion(null);
+          }
         }
       } catch {
         setError("No fue posible cargar la promoción.");
