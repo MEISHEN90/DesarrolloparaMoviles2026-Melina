@@ -64,7 +64,15 @@
           "locationWhenInUsePermission": "La app usa tu ubicación para mostrarte los comercios cercanos y calcular distancias."
         }
       ],
-      "expo-notifications"
+      "expo-notifications",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
