@@ -156,8 +156,10 @@ PROMO|pro-002|usr-001
 - Obtención de ubicación actual.
 - Integración con `react-native-maps`.
 - Marcadores de comercios.
+- Filtro del mapa por rubro (marcadores y lista).
 - Cálculo de distancia.
 - Comercios ordenados por cercanía.
+- Botón "Ir" en los comercios cercanos: abre la app de mapas con direcciones (auto / caminando).
 - Funcionamiento alternativo cuando el permiso de ubicación es rechazado.
 - Apertura de Google Maps desde la ficha del comercio.
 
@@ -496,8 +498,8 @@ Rol: Comercio (Ferretería El Tornillo)
 - [x] Panel Mis promociones (alta, edición, baja y usos).
 - [x] Rubros de interés y apagado de avisos en el perfil.
 - [x] Avisos de promociones nuevas y por vencer.
-- [ ] Filtro de mapa por rubro.
-- [ ] Botón "Ir" en el mapa (cómo llegar).
+- [x] Filtro de mapa por rubro.
+- [x] Botón "Ir" en el mapa (cómo llegar).
 - [ ] Revisión visual final de todas las pantallas.
 
 ---

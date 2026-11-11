@@ -175,7 +175,31 @@ Después de apagar avisos y agregar "Hogar" — verificado leyendo `/yo` directa
 
 ---
 
-## 7. Bugs reales encontrados y corregidos
+## 7. El mapa: filtro por rubro y botón "Ir"
+
+**Qué había:** el mapa mostraba todos los comercios siempre, ordenados por distancia, sin filtro ni forma de abrir el GPS desde ahí. Además, si `obtenerUbicacionActual()` fallaba, el `catch` general tiraba abajo todo el mapa (comercios incluidos).
+
+**Qué se cambió** (`app/(tabs)/mapa.tsx`):
+- **Chips de filtro por rubro** (Todos + los 8 rubros): filtran los marcadores del mapa y la lista de cercanos al mismo tiempo. Es el último punto funcional que faltaba del PRD.
+- **Botón "Ir"** en cada comercio de la lista: abre Google Maps en modo direcciones (`maps/dir/?api=1&destination=…`) con origen "Your location" y el selector auto / tren / caminando / bici — el "que lo lleve caminando o en auto" del PRD.
+- **La ubicación ya no tumba el mapa**: si falla (Play Services frío, permiso negado), queda el aviso y la lista muestra todos los comercios sin distancia — coherente con el "si niega la ubicación, que igual pueda buscar" del PRD.
+- **Sin ubicación la lista ya no queda vacía**: antes `comerciosCercanos` devolvía `[]` sin permiso; ahora muestra todos los comercios y sólo omite el chip de distancia.
+
+Mapa con chips, distancias y "Ir":
+
+<img src="capturas/mapa-filtro-e-ir.png" width="320" alt="Mapa con filtro e Ir" />
+
+Filtro por Gastronomía aplicado (marcadores y lista):
+
+<img src="capturas/mapa-filtro-gastronomia.png" width="320" alt="Filtro gastronomia" />
+
+"Ir" abre Google Maps con el selector de modo:
+
+<img src="capturas/mapa-ir-google-maps.png" width="320" alt="Ir en Google Maps" />
+
+---
+
+## 8. Bugs reales encontrados y corregidos
 
 1. **Los formularios no precargaban al editar** (existía también en la carpeta vieja): los modales viven montados aunque estén cerrados, así que el `useState` inicial no alcanzaba — "Editar mi reseña" abría con 5★ y texto vacío. Corregido con un `useEffect` que sincroniza el estado cada vez que el modal se abre. Aplicado a los tres formularios (reseña, respuesta y promoción).
 
@@ -189,7 +213,7 @@ Después de apagar avisos y agregar "Hogar" — verificado leyendo `/yo` directa
 
 2. **Botón "Responder" visible en reseñas ya respondidas** — detectado por los tests de componente; condición `!resena.respuesta` (ya venía de la carpeta vieja, conservado en el trasplante).
 
-## 8. Avisos de promociones (de la sesión anterior, incluidos en este diff)
+## 9. Avisos de promociones (de la sesión anterior, incluidos en este diff)
 
 Respecto del backup, también entran: `src/servicios/avisos.ts` (revisión de promos nuevas de favoritos/rubros + recordatorios de por vencer, con límites por revisión), `src/hooks/use-avisos-promociones.ts` (revisa al arrancar y al volver a primer plano, máximo una vez cada 5 minutos), helpers en `src/utils/promociones.ts` y el hook montado en `app/_layout.tsx`. Verificado en vivo: promo creada por el comercio → notificación local en la cortina:
 
