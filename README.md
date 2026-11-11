@@ -28,6 +28,11 @@ Repositorio principal del grupo:
 Rama de desarrollo utilizada actualmente:
 
 [`Melina-Casco---Test`](https://github.com/Ranger9707/DesarrolloparaMoviles2026/tree/Melina-Casco---Test)
+
+Versión casi final de Matías (reseñas, avisos, QR de promos y panel de comercio), sobre `main`:
+
+[`Matias-app-casi-final`](https://github.com/Ranger9707/DesarrolloparaMoviles2026/tree/Matias-app-casi-final)
+
 Cada uno por favor clone o use una nueva rama para ir testeando. Aún no esta colocado nada en MAIN.
 
 ---
@@ -113,11 +118,15 @@ Además de las funcionalidades generales, puede:
 ### Promociones
 
 - Listado de promociones activas.
-- Pantalla de detalle.
+- Categorías vigentes / próximas / por vencer (estados de la API).
+- Filtro de promociones por rubro.
+- Pantalla de detalle con enlace al comercio.
 - Validación mediante códigos QR.
 - Registro del uso de promociones.
 - Prevención persistente de usos duplicados.
 - Visualización de promoción vigente dentro de la ficha del comercio.
+- **Mostrar mi código**: el vecino genera el QR de una promo `soloApp` en su pantalla para que el comercio lo escanee (o lo verifique por el código en texto).
+- Panel **Mis promociones** para el comercio: alta, edición y baja lógica de promociones con contador de usos por promo.
 
 Formato utilizado actualmente para QR de promociones:
 
@@ -188,7 +197,11 @@ Se utiliza `expo-haptics` como respuesta del dispositivo frente a acciones relev
 
 Se utiliza `expo-notifications` para notificaciones locales asociadas a eventos reales de la aplicación.
 
-Actualmente se dispara una notificación al registrar correctamente el uso de una promoción.
+- aviso cuando entra una promoción nueva de un comercio favorito o de un rubro de interés;
+- recordatorio cuando una promoción de un favorito está por vencer;
+- confirmación cuando el comercio registra el uso de una promoción.
+
+Los avisos se pueden apagar todos de una desde el perfil (`avisosActivos`), y los rubros de interés se eligen en la misma sección.
 
 > Expo Go puede mostrar advertencias relacionadas con notificaciones push remotas. El proyecto utiliza notificaciones locales para esta funcionalidad.
 
@@ -203,23 +216,17 @@ Actualmente se dispara una notificación al registrar correctamente el uso de un
 
 ### Reseñas
 
-Actualmente se encuentra implementada la base funcional del módulo:
+Módulo completo e integrado en la ficha del comercio:
 
-- modelo `Resena`;
-- mocks de reseñas;
-- servicio de consulta por comercio;
-- orden por fecha;
-- cálculo de promedio;
-- conteo de reseñas.
-
-Pendiente:
-
-- creación;
-- edición;
-- eliminación;
-- reporte;
-- respuesta del comercio;
-- integración completa en interfaz.
+- modelo `Resena` con servicio propio (API + caché SQLite + cola offline);
+- crear reseña (estrellas + comentario) con sesión activa;
+- editar y eliminar la reseña propia;
+- reportar reseñas ofensivas;
+- respuesta del comercio (una sola vez por reseña, sólo el dueño);
+- orden por fecha y promedio;
+- sincronización automática de reseñas pendientes al recuperar conexión;
+- pull-to-refresh y refresco al volver al foco;
+- componentes con tests propios.
 
 ---
 
@@ -317,9 +324,13 @@ app/
 ├── imagen-comercio.tsx
 ├── login.tsx
 ├── registro.tsx
+├── mi-comercio.tsx
+├── mis-promociones.tsx
 └── _layout.tsx
 
 src/
+├── components/
+├── contexto/
 ├── hooks/
 ├── mocks/
 ├── servicios/
@@ -327,6 +338,7 @@ src/
 └── utils/
 
 __tests__/
+docs/
 ```
 
 ### `app/`
@@ -423,22 +435,22 @@ npx expo-doctor@latest
 
 ## Credenciales de desarrollo
 
-> Estas credenciales corresponden únicamente al entorno de pruebas actual.
+> Estas credenciales corresponden únicamente al entorno de pruebas actual (API de la cátedra). Contraseña `demo1234` para todas las cuentas.
 
 ### Usuario vecino
 
 ```text
 Correo: marta@mail.com
-Contraseña: 123456
+Contraseña: demo1234
 Rol: Vecino
 ```
 
 ### Usuario comercio
 
 ```text
-Correo: comercio@eltornillo.com
-Contraseña: 123456
-Rol: Comercio
+Correo: tornillo@demo.ar
+Contraseña: demo1234
+Rol: Comercio (Ferretería El Tornillo)
 ```
 
 ---
@@ -454,9 +466,9 @@ Rol: Comercio
 | 5. Cámara y archivos | ✅ Completada |
 | 6. Persistencia y conectividad | ✅ Completada |
 | 7. Notificaciones, háptica y multimedia | ✅ Completada |
-| 8. API de la cátedra | ⏳ Pendiente de disponibilidad |
-| 9. Testing y revisión funcional | 🟡 En desarrollo |
-| 10. Identidad y entrega final | ⏳ Pendiente |
+| 8. API de la cátedra | ✅ Integrada (axios detrás de la capa de servicios) |
+| 9. Testing y revisión funcional | 🟡 87 tests en verde; falta revisión visual final |
+| 10. Identidad y entrega final | 🟡 Ícono, splash y nombre listos; falta build EAS y pruebas en dispositivo |
 
 ### Revisión funcional adicional
 
@@ -472,29 +484,40 @@ Rol: Comercio
 - [x] Favoritos persistentes por usuario.
 - [x] Persistencia del favorito luego de reiniciar.
 - [x] Base funcional del módulo de reseñas.
-- [ ] Crear reseñas.
-- [ ] Editar reseñas propias.
-- [ ] Eliminar reseñas propias.
-- [ ] Reportar reseñas.
-- [ ] Respuesta del comercio.
+- [x] Crear reseñas.
+- [x] Editar reseñas propias.
+- [x] Eliminar reseñas propias.
+- [x] Reportar reseñas.
+- [x] Respuesta del comercio.
+- [x] Reseñas offline con sincronización automática.
+- [x] Categorías de promociones (vigentes / próximas / por vencer).
+- [x] Filtro de promociones por rubro.
+- [x] Mostrar mi código (QR del vecino para promos sólo app).
+- [x] Panel Mis promociones (alta, edición, baja y usos).
+- [x] Rubros de interés y apagado de avisos en el perfil.
+- [x] Avisos de promociones nuevas y por vencer.
 - [ ] Filtro de mapa por rubro.
+- [ ] Botón "Ir" en el mapa (cómo llegar).
 - [ ] Revisión visual final de todas las pantallas.
 
 ---
 
 ## API de la cátedra
 
-La integración con la API permanece pendiente porque todavía no se dispone del material definitivo de la cátedra.
+La API de la cátedra está **integrada**: toda lectura y escritura pasa por la capa de servicios propia (`src/servicios/`) y viaja por **axios**, respetando el sobre de respuestas (`datos` / `error`) y el token Bearer en `expo-secure-store`.
 
-Mientras tanto, el proyecto utiliza mocks detrás de una capa de servicios propia para facilitar el reemplazo progresivo cuando los endpoints estén disponibles.
+Endpoints en uso: comercios, rubros, promociones (con estados `vigentes` / `proximas` / `por-vencer`), reseñas, `auth/ingreso`, `auth/registro`, `yo` (lectura y edición de rubros de interés y avisos), favoritos y `mi-comercio` (datos y CRUD de promociones).
+
+El comportamiento sin conexión se resuelve con caché SQLite y una cola de reseñas pendientes que se sincroniza sola.
 
 ---
 
 ## Entrega final pendiente
 
-- [ ] Ícono propio.
-- [ ] Splash screen definitivo.
-- [ ] Nombre definitivo del producto.
+- [x] Ícono propio (PNG 1024×1024 sin transparencias).
+- [x] Splash screen definitivo.
+- [x] Nombre definitivo del producto.
+- [x] Permisos declarados en `app.json` y `eas.json` con perfil de APK.
 - [ ] Build Android Preview.
 - [ ] APK instalable.
 - [ ] Pruebas en dispositivo físico.
