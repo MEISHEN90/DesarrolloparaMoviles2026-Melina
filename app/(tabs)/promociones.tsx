@@ -134,7 +134,10 @@ export default function PromocionesScreen() {
     return mapa;
   }, [comercios]);
 
-  const promociones = porCategoria[categoria] ?? [];
+  const promociones = useMemo(
+    () => porCategoria[categoria] ?? [],
+    [porCategoria, categoria],
+  );
 
   const promocionesFiltradas = useMemo(() => {
     if (!rubroFiltro) {
