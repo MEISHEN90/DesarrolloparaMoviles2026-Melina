@@ -35,12 +35,11 @@ export async function configurarNotificaciones(): Promise<void> {
 
 export async function notificarPromocionRegistrada(
   tituloPromocion: string,
-  nombreCliente: string,
 ): Promise<void> {
   await Notifications.scheduleNotificationAsync({
     content: {
       title: "Promoción registrada",
-      body: `${tituloPromocion} fue registrada para ${nombreCliente}.`,
+      body: `${tituloPromocion} fue registrada correctamente.`,
       sound: true,
     },
     trigger: null,
