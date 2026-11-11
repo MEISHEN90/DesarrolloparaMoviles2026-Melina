@@ -139,10 +139,11 @@ export default function MapaScreen() {
             onCalloutPress={() => router.push(`/comercio/${comercio.id}`)}
           />
         ))}
-        <View pointerEvents="none" style={styles.osmAtribucion}>
-          <Text style={styles.osmAtribucionTexto}>© OpenStreetMap contributors</Text>
-        </View>
       </MapView>
+
+      <View pointerEvents="none" style={styles.osmAtribucion}>
+        <Text style={styles.osmAtribucionTexto}>© OpenStreetMap contributors</Text>
+      </View>
 
       <View style={styles.panel}>
         <View style={styles.panelEncabezado}>
