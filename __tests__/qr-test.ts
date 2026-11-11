@@ -1,61 +1,25 @@
 import {
-  construirCodigoPromocion,
-  interpretarQrPromocion,
+  normalizarCodigoPromocion,
+  pareceCodigoPromocion,
 } from "../src/utils/qr";
 
-describe("interpretación de códigos QR", () => {
-  test("interpreta correctamente un QR de promoción válido", () => {
-    const resultado = interpretarQrPromocion("PROMO|pro-001|usr-001");
-
-    expect(resultado).toEqual({
-      tipo: "PROMO",
-      promocionId: "pro-001",
-      usuarioId: "usr-001",
-    });
+describe("códigos QR de promociones", () => {
+  test("reconoce el formato de código generado por la API", () => {
+    expect(pareceCodigoPromocion("CCU-7KQ4-M9XH")).toBe(true);
   });
 
-  test("rechaza un QR con formato incorrecto", () => {
-    const resultado = interpretarQrPromocion("texto-cualquiera");
-
-    expect(resultado).toBeNull();
+  test("normaliza espacios y minúsculas antes de validar", () => {
+    expect(normalizarCodigoPromocion("  ccu-7kq4-m9xh  ")).toBe(
+      "CCU-7KQ4-M9XH",
+    );
+    expect(pareceCodigoPromocion("  ccu-7kq4-m9xh  ")).toBe(true);
   });
 
-  test("rechaza un tipo de QR desconocido", () => {
-    const resultado = interpretarQrPromocion("OTRO|pro-001|usr-001");
-
-    expect(resultado).toBeNull();
+  test("rechaza el formato local antiguo", () => {
+    expect(pareceCodigoPromocion("PROMO|pro-441|usr-512")).toBe(false);
   });
 
-  test("rechaza un identificador de promoción inválido", () => {
-    const resultado = interpretarQrPromocion("PROMO|abc-001|usr-001");
-
-    expect(resultado).toBeNull();
-  });
-
-  test("rechaza un identificador de usuario inválido", () => {
-    const resultado = interpretarQrPromocion("PROMO|pro-001|cliente-001");
-
-    expect(resultado).toBeNull();
-  });
-});
-
-describe("construcción del código de promoción", () => {
-  test("el código construido es exactamente lo que el escáner interpreta", () => {
-    const codigo = construirCodigoPromocion("pro-441", "usr-512");
-
-    expect(codigo).toBe("PROMO|pro-441|usr-512");
-
-    expect(interpretarQrPromocion(codigo)).toEqual({
-      tipo: "PROMO",
-      promocionId: "pro-441",
-      usuarioId: "usr-512",
-    });
-  });
-
-  test("dos códigos con distinto usuario no se confunden", () => {
-    const deMarta = construirCodigoPromocion("pro-441", "usr-512");
-    const deOtro = construirCodigoPromocion("pro-441", "usr-777");
-
-    expect(deMarta).not.toBe(deOtro);
+  test("rechaza texto que no tiene formato de código de promoción", () => {
+    expect(pareceCodigoPromocion("texto-cualquiera")).toBe(false);
   });
 });
