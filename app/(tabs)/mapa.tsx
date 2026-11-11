@@ -9,7 +9,7 @@ import {
   Text,
   View,
 } from "react-native";
-import MapView, { Marker, Region } from "react-native-maps";
+import MapView, { Marker, Region, UrlTile } from "react-native-maps";
 
 import { useTema } from "../../src/contexto/tema";
 import { obtenerComercios } from "../../src/servicios/comercios";
@@ -118,9 +118,15 @@ export default function MapaScreen() {
         key={tema}
         style={styles.mapa}
         initialRegion={regionInicial}
+        mapType="none"
         showsUserLocation={ubicacionUsuario !== null}
         showsMyLocationButton={ubicacionUsuario !== null}
       >
+        <UrlTile
+          urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+          maximumZ={19}
+          flipY={false}
+        />
         {comercios.map((comercio) => (
           <Marker
             key={comercio.id}
@@ -133,6 +139,9 @@ export default function MapaScreen() {
             onCalloutPress={() => router.push(`/comercio/${comercio.id}`)}
           />
         ))}
+        <View pointerEvents="none" style={styles.osmAtribucion}>
+          <Text style={styles.osmAtribucionTexto}>© OpenStreetMap contributors</Text>
+        </View>
       </MapView>
 
       <View style={styles.panel}>
@@ -186,6 +195,19 @@ function crearEstilos(colores: ReturnType<typeof useTema>["colores"]) {
   return StyleSheet.create({
     container: { flex: 1, backgroundColor: colores.fondo },
     mapa: { flex: 3 },
+    osmAtribucion: {
+      position: "absolute",
+      right: 6,
+      bottom: 4,
+      backgroundColor: "rgba(255,255,255,0.88)",
+      borderRadius: 4,
+      paddingHorizontal: 5,
+      paddingVertical: 2,
+    },
+    osmAtribucionTexto: {
+      fontSize: 9,
+      color: "#444",
+    },
     panel: {
       flex: 2,
       paddingHorizontal: 16,
