@@ -134,9 +134,9 @@ export default function PromocionesScreen() {
     return mapa;
   }, [comercios]);
 
-  const promociones = porCategoria[categoria] ?? [];
-
   const promocionesFiltradas = useMemo(() => {
+    const promociones = porCategoria[categoria] ?? [];
+
     if (!rubroFiltro) {
       return promociones;
     }
@@ -145,7 +145,7 @@ export default function PromocionesScreen() {
       (promocion) =>
         comerciosPorId.get(promocion.comercioId)?.rubroId === rubroFiltro,
     );
-  }, [promociones, rubroFiltro, comerciosPorId]);
+  }, [porCategoria, categoria, rubroFiltro, comerciosPorId]);
 
   const categoriaActual =
     CATEGORIAS.find((unaCategoria) => unaCategoria.id === categoria) ??

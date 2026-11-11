@@ -1,4 +1,3 @@
-import Ionicons from "@react-native-vector-icons/ionicons";
 import { useEffect, useMemo, useState } from "react";
 import {
   Modal,

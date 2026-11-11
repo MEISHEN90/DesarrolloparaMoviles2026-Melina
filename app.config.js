@@ -1,6 +1,6 @@
 const appJson = require("./app.json");
 
-module.exports = () => ({
+module.exports = {
   ...appJson.expo,
 
   android: {
@@ -15,4 +15,4 @@ module.exports = () => ({
       },
     },
   },
-});
+};
