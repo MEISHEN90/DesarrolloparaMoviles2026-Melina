@@ -3,6 +3,7 @@ import { router } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Linking,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -13,11 +14,12 @@ import MapView, { Marker, Region } from "react-native-maps";
 
 import { useTema } from "../../src/contexto/tema";
 import { obtenerComercios } from "../../src/servicios/comercios";
+import { obtenerRubros } from "../../src/servicios/rubros";
 import {
   obtenerUbicacionActual,
   UbicacionUsuario,
 } from "../../src/servicios/ubicacion";
-import { Comercio } from "../../src/tipos/modelos";
+import { Comercio, Rubro } from "../../src/tipos/modelos";
 import {
   calcularDistanciaKm,
   formatearDistancia,
@@ -30,15 +32,18 @@ const REGION_CONCEPCION: Region = {
   longitudeDelta: 0.03,
 };
 
-interface ComercioConDistancia {
+interface ComercioEnMapa {
   comercio: Comercio;
-  distanciaKm: number;
+  /** null cuando se negó la ubicación: no se puede calcular distancia. */
+  distanciaKm: number | null;
 }
 
 export default function MapaScreen() {
   const { colores, tema } = useTema();
   const styles = useMemo(() => crearEstilos(colores), [colores]);
   const [comercios, setComercios] = useState<Comercio[]>([]);
+  const [rubros, setRubros] = useState<Rubro[]>([]);
+  const [rubroFiltro, setRubroFiltro] = useState<string | null>(null);
   const [ubicacionUsuario, setUbicacionUsuario] = useState<UbicacionUsuario | null>(null);
   const [permisoDenegado, setPermisoDenegado] = useState(false);
   const [cargando, setCargando] = useState(true);
@@ -54,14 +59,25 @@ export default function MapaScreen() {
         const comerciosObtenidos = await obtenerComercios();
         setComercios(comerciosObtenidos);
 
-        const ubicacion = await obtenerUbicacionActual();
+        // El filtro por rubro vive en el mapa: sin la lista de rubros no hay chips.
+        obtenerRubros()
+          .then(setRubros)
+          .catch(() => setRubros([]));
 
-        if (!ubicacion) {
+        // Un problema de ubicación no tiene que tumbar el mapa: sin ubicación
+        // la lista muestra todos los comercios sin distancia (aviso arriba).
+        try {
+          const ubicacion = await obtenerUbicacionActual();
+
+          if (!ubicacion) {
+            setPermisoDenegado(true);
+            return;
+          }
+
+          setUbicacionUsuario(ubicacion);
+        } catch {
           setPermisoDenegado(true);
-          return;
         }
-
-        setUbicacionUsuario(ubicacion);
       } catch {
         setError("No fue posible cargar la información del mapa.");
       } finally {
@@ -72,16 +88,32 @@ export default function MapaScreen() {
     void cargarMapa();
   }, []);
 
-  const comerciosCercanos = useMemo<ComercioConDistancia[]>(() => {
-    if (!ubicacionUsuario) return [];
+  const comerciosFiltrados = useMemo(() => {
+    if (!rubroFiltro) {
+      return comercios;
+    }
 
-    return comercios
-      .map((comercio) => ({
-        comercio,
-        distanciaKm: calcularDistanciaKm(ubicacionUsuario, comercio.coordenadas),
-      }))
-      .sort((a, b) => a.distanciaKm - b.distanciaKm);
-  }, [comercios, ubicacionUsuario]);
+    return comercios.filter((comercio) => comercio.rubroId === rubroFiltro);
+  }, [comercios, rubroFiltro]);
+
+  const comerciosEnMapa = useMemo<ComercioEnMapa[]>(() => {
+    return comerciosFiltrados.map((comercio) => ({
+      comercio,
+      distanciaKm: ubicacionUsuario
+        ? calcularDistanciaKm(ubicacionUsuario, comercio.coordenadas)
+        : null,
+    })).sort((a, b) => (a.distanciaKm ?? Infinity) - (b.distanciaKm ?? Infinity));
+  }, [comerciosFiltrados, ubicacionUsuario]);
+
+  // "Ir" del PRD: la app de mapas del teléfono lleva al local, caminando o en
+  // auto (el modo lo elige el usuario dentro de Google Maps).
+  async function irAComercio(comercio: Comercio) {
+    const { latitud, longitud } = comercio.coordenadas;
+
+    await Linking.openURL(
+      `https://www.google.com/maps/dir/?api=1&destination=${latitud},${longitud}`,
+    );
+  }
 
   if (cargando) {
     return (
@@ -121,7 +153,7 @@ export default function MapaScreen() {
         showsUserLocation={ubicacionUsuario !== null}
         showsMyLocationButton={ubicacionUsuario !== null}
       >
-        {comercios.map((comercio) => (
+        {comerciosFiltrados.map((comercio) => (
           <Marker
             key={comercio.id}
             coordinate={{
@@ -143,6 +175,51 @@ export default function MapaScreen() {
           <Text style={styles.panelTitulo}>Comercios cercanos</Text>
         </View>
 
+        {rubros.length > 0 ? (
+          <View style={styles.filaChips}>
+            <Pressable
+              onPress={() => setRubroFiltro(null)}
+              style={[styles.chip, rubroFiltro === null && styles.chipSeleccionado]}
+              accessibilityRole="button"
+              accessibilityState={{ selected: rubroFiltro === null }}
+              accessibilityLabel="Filtrar el mapa por todos los rubros"
+            >
+              <Text
+                style={[
+                  styles.chipTexto,
+                  rubroFiltro === null && styles.chipSeleccionadoTexto,
+                ]}
+              >
+                Todos
+              </Text>
+            </Pressable>
+
+            {rubros.map((rubro) => {
+              const seleccionado = rubroFiltro === rubro.id;
+
+              return (
+                <Pressable
+                  key={rubro.id}
+                  onPress={() => setRubroFiltro(seleccionado ? null : rubro.id)}
+                  style={[styles.chip, seleccionado && styles.chipSeleccionado]}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: seleccionado }}
+                  accessibilityLabel={`Filtrar el mapa por rubro ${rubro.nombre}`}
+                >
+                  <Text
+                    style={[
+                      styles.chipTexto,
+                      seleccionado && styles.chipSeleccionadoTexto,
+                    ]}
+                  >
+                    {rubro.nombre}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        ) : null}
+
         {permisoDenegado ? (
           <View style={styles.aviso}>
             <Ionicons name="location-outline" size={20} color={colores.promo} />
@@ -151,11 +228,15 @@ export default function MapaScreen() {
               consultar todos los comercios.
             </Text>
           </View>
-        ) : comerciosCercanos.length === 0 ? (
-          <Text style={styles.avisoTexto}>No hay comercios disponibles.</Text>
+        ) : comerciosEnMapa.length === 0 ? (
+          <Text style={styles.avisoTexto}>
+            {rubroFiltro
+              ? "No hay comercios de ese rubro en el mapa."
+              : "No hay comercios disponibles."}
+          </Text>
         ) : (
           <ScrollView contentContainerStyle={styles.listaContenido}>
-            {comerciosCercanos.map(({ comercio, distanciaKm }) => (
+            {comerciosEnMapa.map(({ comercio, distanciaKm }) => (
               <Pressable
                 key={comercio.id}
                 style={styles.comercioItem}
@@ -168,11 +249,27 @@ export default function MapaScreen() {
                   <Text style={styles.comercioDireccion}>{comercio.direccion}</Text>
                 </View>
 
-                <View style={styles.distanciaChip}>
-                  <Text style={styles.comercioDistancia}>
-                    {formatearDistancia(distanciaKm)}
-                  </Text>
-                </View>
+                {distanciaKm !== null ? (
+                  <View style={styles.distanciaChip}>
+                    <Text style={styles.comercioDistancia}>
+                      {formatearDistancia(distanciaKm)}
+                    </Text>
+                  </View>
+                ) : null}
+
+                <Pressable
+                  onPress={() => void irAComercio(comercio)}
+                  style={styles.irBoton}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Cómo llegar a ${comercio.nombre}`}
+                >
+                  <Ionicons
+                    name="navigate-outline"
+                    size={16}
+                    color="#FFFFFF"
+                  />
+                  <Text style={styles.irTexto}>Ir</Text>
+                </Pressable>
               </Pressable>
             ))}
           </ScrollView>
@@ -203,6 +300,23 @@ function crearEstilos(colores: ReturnType<typeof useTema>["colores"]) {
       justifyContent: "center",
     },
     panelTitulo: { fontSize: 20, fontWeight: "800", color: colores.texto },
+    // flexShrink 0: los chips no se comprimen cuando el panel aprieta —
+    // la lista de abajo (scrollable) es la que cede espacio.
+    filaChips: { flexDirection: "row", flexWrap: "wrap", flexShrink: 0, gap: 8, marginBottom: 10 },
+    chip: {
+      paddingHorizontal: 12,
+      paddingVertical: 7,
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: colores.borde,
+      backgroundColor: colores.tarjeta,
+    },
+    chipTexto: { fontSize: 12, fontWeight: "600", color: colores.secundario },
+    chipSeleccionado: {
+      backgroundColor: colores.primario,
+      borderColor: colores.primario,
+    },
+    chipSeleccionadoTexto: { color: "#FFFFFF", fontWeight: "700" },
     listaContenido: { paddingBottom: 12, gap: 8 },
     comercioItem: {
       borderWidth: 1,
@@ -212,7 +326,7 @@ function crearEstilos(colores: ReturnType<typeof useTema>["colores"]) {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      gap: 12,
+      gap: 10,
       backgroundColor: colores.tarjeta,
     },
     comercioInformacion: { flex: 1 },
@@ -225,6 +339,16 @@ function crearEstilos(colores: ReturnType<typeof useTema>["colores"]) {
       paddingVertical: 6,
     },
     comercioDistancia: { fontSize: 12, fontWeight: "800", color: colores.primario },
+    irBoton: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+      backgroundColor: colores.primario,
+      borderRadius: 999,
+      paddingHorizontal: 12,
+      paddingVertical: 7,
+    },
+    irTexto: { fontSize: 12, fontWeight: "800", color: "#FFFFFF" },
     estadoContainer: {
       flex: 1,
       backgroundColor: colores.fondo,
