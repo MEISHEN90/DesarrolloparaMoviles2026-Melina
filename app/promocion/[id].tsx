@@ -123,6 +123,10 @@ export default function PromocionDetalleScreen() {
   const promoUsada = fechaDeUso !== null;
 
   async function alternarCodigo() {
+    if (!promocion) {
+      return;
+    }
+
     if (codigoVisible) {
       setCodigoVisible(false);
       return;
