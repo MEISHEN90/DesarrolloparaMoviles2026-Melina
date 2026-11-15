@@ -1,6 +1,6 @@
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { router, Stack } from "expo-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -9,16 +9,14 @@ import {
   View,
 } from "react-native";
 
-import { obtenerUsuarioPorId } from "../src/servicios/autenticacion";
 import {
   confirmarAccionExitosa,
   informarError,
 } from "../src/servicios/haptica";
 import { notificarPromocionRegistrada } from "../src/servicios/notificaciones";
 import { obtenerPromocionPorId } from "../src/servicios/promociones";
-import { registrarUsoPromocion } from "../src/servicios/usos-promociones";
-import { Promocion, Usuario } from "../src/tipos/modelos";
-import { DatosQrPromocion, interpretarQrPromocion } from "../src/utils/qr";
+import { validarCodigoPromocion } from "../src/servicios/usos-promociones";
+import { Promocion, UsoDePromocion } from "../src/tipos/modelos";
 
 type EstadoQr =
   | "escaneando"
@@ -32,16 +30,16 @@ export default function EscanearQrScreen() {
 
   const [estadoQr, setEstadoQr] = useState<EstadoQr>("escaneando");
   const [codigoLeido, setCodigoLeido] = useState<string | null>(null);
-  const [datosQr, setDatosQr] = useState<DatosQrPromocion | null>(null);
+  const bloqueoLectura = useRef(false);
+  const [usoRegistrado, setUsoRegistrado] = useState<UsoDePromocion | null>(null);
   const [promocion, setPromocion] = useState<Promocion | null>(null);
-  const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [mensajeError, setMensajeError] = useState<string | null>(null);
   const [confirmando, setConfirmando] = useState(false);
 
   if (!permiso) {
     return (
       <View style={styles.estadoContainer}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large"  />
         <Text style={styles.estadoTexto}>Verificando permiso de cámara...</Text>
       </View>
     );
@@ -81,101 +79,49 @@ export default function EscanearQrScreen() {
   }
 
   async function manejarCodigoLeido({ data }: { data: string }) {
-    if (estadoQr !== "escaneando") {
-      return;
-    }
-
-    setEstadoQr("validando");
-    setCodigoLeido(data);
+    if (bloqueoLectura.current || estadoQr !== "escaneando") return;
+    bloqueoLectura.current = true;
+    const codigo = data.trim();
+    setCodigoLeido(codigo);
     setMensajeError(null);
-
-    const datosInterpretados = interpretarQrPromocion(data);
-
-    if (!datosInterpretados) {
-      await informarError();
-
+    if (!/^CCU-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(codigo)) {
       setEstadoQr("invalido");
-      setMensajeError("El código QR no corresponde a una promoción válida.");
+      setMensajeError(codigo.startsWith("PROMO|")
+        ? "Este QR pertenece al formato anterior. Volvé a generar el código desde la promoción con la app actualizada."
+        : "El código no tiene el formato de una promoción. Debe comenzar con CCU-.");
+      await informarError().catch(() => {});
       return;
     }
-
-    try {
-      const [promocionEncontrada, usuarioEncontrado] = await Promise.all([
-        obtenerPromocionPorId(datosInterpretados.promocionId),
-        obtenerUsuarioPorId(datosInterpretados.usuarioId),
-      ]);
-
-      if (!promocionEncontrada) {
-        await informarError();
-
-        setEstadoQr("invalido");
-        setMensajeError("La promoción indicada en el código no existe.");
-        return;
-      }
-
-      if (!promocionEncontrada.activa) {
-        await informarError();
-
-        setEstadoQr("invalido");
-        setMensajeError("La promoción ya no se encuentra activa.");
-        return;
-      }
-
-      if (!usuarioEncontrado) {
-        await informarError();
-
-        setEstadoQr("invalido");
-        setMensajeError("El usuario indicado en el código no existe.");
-        return;
-      }
-
-      setDatosQr(datosInterpretados);
-      setPromocion(promocionEncontrada);
-      setUsuario(usuarioEncontrado);
-      setEstadoQr("valido");
-    } catch {
-      await informarError();
-
-      setEstadoQr("invalido");
-      setMensajeError("No fue posible validar el código QR.");
-    }
+    // La API valida y registra en una sola operación al confirmar.
+    setEstadoQr("valido");
   }
 
   async function manejarConfirmarUso() {
-    if (!datosQr || !promocion || !usuario || !codigoLeido) {
-      return;
-    }
-
+    if (!codigoLeido || confirmando) return;
     try {
       setConfirmando(true);
       setMensajeError(null);
-
-      await registrarUsoPromocion(promocion.id, usuario.id, codigoLeido);
-
-      await confirmarAccionExitosa();
-
-      await notificarPromocionRegistrada(promocion.titulo, usuario.nombre);
-
+      const uso = await validarCodigoPromocion(codigoLeido);
+      setUsoRegistrado(uso);
       setEstadoQr("confirmado");
-    } catch (errorDesconocido) {
-      await informarError();
-
-      if (errorDesconocido instanceof Error) {
-        setMensajeError(errorDesconocido.message);
-      } else {
-        setMensajeError("No fue posible registrar el uso de la promoción.");
-      }
-    } finally {
-      setConfirmando(false);
-    }
+      // Una falla de detalle, vibración o notificación no revierte el canje exitoso.
+      const detalle = await obtenerPromocionPorId(uso.promocionId).catch(() => null);
+      setPromocion(detalle);
+      await confirmarAccionExitosa().catch(() => {});
+      await notificarPromocionRegistrada(detalle?.titulo ?? "Promoción", uso.usuarioId).catch(() => {});
+    } catch (error) {
+      setEstadoQr("invalido");
+      setMensajeError(error instanceof Error ? error.message : "No fue posible validar el código.");
+      await informarError().catch(() => {});
+    } finally { setConfirmando(false); }
   }
 
   function volverAEscanear() {
     setEstadoQr("escaneando");
     setCodigoLeido(null);
-    setDatosQr(null);
+    bloqueoLectura.current = false;
+    setUsoRegistrado(null);
     setPromocion(null);
-    setUsuario(null);
     setMensajeError(null);
   }
 
@@ -208,26 +154,16 @@ export default function EscanearQrScreen() {
 
         {estadoQr === "validando" && (
           <View style={styles.estadoContainer}>
-            <ActivityIndicator size="large" />
+            <ActivityIndicator size="large"  />
             <Text style={styles.estadoTexto}>Validando código...</Text>
           </View>
         )}
 
-        {estadoQr === "valido" && promocion && usuario && (
+        {estadoQr === "valido" && (
           <View style={styles.resultadoContainer}>
-            <Text style={styles.titulo}>Código válido</Text>
-
-            <Text style={styles.label}>Promoción</Text>
-            <Text style={styles.valor}>{promocion.titulo}</Text>
-
-            <Text style={styles.label}>Detalle</Text>
-            <Text style={styles.valor}>{promocion.detalle}</Text>
-
-            <Text style={styles.label}>Cliente</Text>
-            <Text style={styles.valor}>{usuario.nombre}</Text>
-
-            <Text style={styles.label}>Correo electrónico</Text>
-            <Text style={styles.valor}>{usuario.email}</Text>
+            <Text style={styles.titulo}>Código leído</Text>
+            <Text style={styles.valor}>{codigoLeido}</Text>
+            <Text style={styles.estadoTexto}>Al confirmar, el servidor verificará el código y registrará el uso si corresponde a su comercio y sigue vigente.</Text>
 
             {mensajeError && <Text style={styles.error}>{mensajeError}</Text>}
 
@@ -238,7 +174,7 @@ export default function EscanearQrScreen() {
               accessibilityRole="button"
             >
               {confirmando ? (
-                <ActivityIndicator />
+                <ActivityIndicator  />
               ) : (
                 <Text style={styles.botonTexto}>
                   Confirmar uso de promoción
@@ -291,7 +227,7 @@ export default function EscanearQrScreen() {
           </View>
         )}
 
-        {estadoQr === "confirmado" && promocion && usuario && (
+        {estadoQr === "confirmado" && usoRegistrado && (
           <View style={styles.resultadoContainer}>
             <Text style={styles.titulo}>Promoción registrada</Text>
 
@@ -300,10 +236,10 @@ export default function EscanearQrScreen() {
             </Text>
 
             <Text style={styles.label}>Promoción</Text>
-            <Text style={styles.valor}>{promocion.titulo}</Text>
+            <Text style={styles.valor}>{promocion?.titulo ?? usoRegistrado?.promocionId}</Text>
 
             <Text style={styles.label}>Cliente</Text>
-            <Text style={styles.valor}>{usuario.nombre}</Text>
+            <Text style={styles.valor}>{usoRegistrado.usuarioId}</Text>
 
             <Pressable
               onPress={volverAEscanear}
@@ -429,3 +365,4 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 });
+
